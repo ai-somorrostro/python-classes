@@ -119,28 +119,28 @@ Cada versión debe incluir:
 
 Trabajo por ramas
 
-**Trabajo por ramas y carpetas personales:**
+**Trabajo por ramas y carpetas de grupo:**
 
-Cada participante debe trabajar en su propia rama principal y carpeta.  
-- La rama y la carpeta deben tener como prefijo el nombre y apellido del estudiante, separados por punto.  
-- Se permite crear ramas secundarias para trabajar features específicas, que siempre deben tener como prefijo el de la principal (ejemplo: `mikel.diez/clase_vacia`).  
-- Las ramas secundarias deberán mergearse a la rama principal personal antes de integrar cambios a la rama general del repositorio, si aplica.
+Cada grupo debe trabajar en su propia rama principal y carpeta.  
+- La rama y la carpeta deben tener como prefijo el nombre y apellido, separados por punto.  
+- Se permite crear ramas secundarias para trabajar features específicas, que siempre deben tener como prefijo el de la principal (ejemplo: `grupo1/clase_vacia`).  
+- Las ramas secundarias deberán mergearse a la rama principal antes de integrar cambios a la rama general del repositorio, si aplica.
 
 **Ejemplo de nombres de ramas:**
-- Rama principal: `mikel.diez`
-- Rama secundaria: `mikel.diez/metodo_endpoint`
+- Rama principal: `grupo1`
+- Rama secundaria: `grupo1/metodo_endpoint`
 
 **Estructura de carpetas esperada dentro del repo:**
 ```
 openrouter/
-├── mikel.diez/
+├── grupo1/
 │   └── src/
 │         openrouter_app/
 │             ├── main.py
 │             ├── __init__.py
 │             └── modules/
 │                 └── openrouter_client.py
-├── ana.lopez/
+├── grupo2/
 │   └── src/
 │         openrouter_app/
 │             ├── main.py
@@ -150,5 +150,5 @@ openrouter/
 ...
 ```
 
-Cada uno debe trabajar exclusivamente en su carpeta personal siguiendo la estructura interna del proyecto, replicando (y modificando) los archivos de `src/` según las entregas solicitadas. el __init__.py es simplemente un fichero vacio que se llama asi
+
 
