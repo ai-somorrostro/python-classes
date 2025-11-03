@@ -108,7 +108,7 @@ class OpenRouterClient:
         
         Nota: Basado en la documentación de OpenRouter para multimodal/image-generation.
         """
-        model = "openai/gpt-5-image-mini"
+        model = "google/gemini-2.5-flash-image"
         messages = [{"role": "user", "content": prompt}]
         extra_params = {"modalities": ["image", "text"]}  # Para habilitar generación de imágenes
         response = self._make_request(model, messages, extra_params)
