@@ -35,7 +35,7 @@ class OpenRouterClient:
 
     def LLM(self, prompt: str) -> str:
         """
-        Envía un prompt al modelo google/gemini-2.0-flash-exp:free
+        EnvÃ­a un prompt al modelo google/gemini-2.0-flash-exp:free
         y devuelve directamente la respuesta.
         """
         payload = {
@@ -50,3 +50,24 @@ class OpenRouterClient:
 
         data = response.json()
         return data["choices"][0]["message"]["content"]
+    
+    def generate_image(self, prompt: str):
+        """Método para generar una imagen usando el modelo openai/gpt-5-image-mini"""
+        data = {
+            "model": "openai/gpt-5-image-mini",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ]
+        }
+        response = requests.post(self.base_url, headers=self.headers, json=data)
+
+        if response.status_code == 200:
+            result = response.json()
+            try:
+                # El README indica que la URL de la imagen está en choices[0].message.content
+                image_url = result["choices"][0]["message"]["content"]
+                return image_url
+            except Exception:
+                return f"Error procesando respuesta: {result}"
+        else:
+            return f"Error: {response.status_code} - {response.text}"
