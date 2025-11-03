@@ -20,4 +20,8 @@ client = OpenRouterClient(api_key)
 
 # Probar
 # print(client.llm_normal("Hola, ¿cómo estás?"))
-print(client.razonador("Explica la diferencia entre una lista y una tupla en Python en una frase."))
+# print(client.razonador("Explica la diferencia entre una lista y una tupla en Python en una frase."))
+
+print("Probando la generación de imágenes...")
+prompt_imagen = "Un gato astronauta flotando en el espacio, con la Tierra de fondo, estilo pintura al óleo."
+print(client.generar_imagen(prompt_imagen))
