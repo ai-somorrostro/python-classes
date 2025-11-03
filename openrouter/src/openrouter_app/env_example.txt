@@ -1,1 +1,1 @@
-OPENROUTER_API_KEY="tu_key"
+OPENROUTER_API_KEY="tu-api-key"
