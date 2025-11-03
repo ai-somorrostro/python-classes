@@ -24,3 +24,12 @@ if __name__ == "__main__":
         print(f"Respuesta: {response_reasoner}\n")
     except ValueError as e:
         print(f"Error en Razonador: {e}\n")
+
+
+    print("=== Prueba Generación de Imagen ===")
+    try:
+        image_url = client.generate_image("Un gato volando en el espacio sideral, estilo realista")
+        print(f"URL de imagen: {image_url[:100]}...")  # Truncada para no saturar la salida
+        print("(Para ver la imagen completa, copia la URL en un navegador o visor de base64)")
+    except ValueError as e:
+        print(f"Error en Generación de Imagen: {e}")
