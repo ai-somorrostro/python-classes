@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 import os
 
 def main():
-   api_key = os.getenv("OPENROUTER_API_KEY")
+    load_dotenv()
+    api_key = os.getenv("OPENROUTER_API_KEY")
     client = OpenRouterClient(api_key)
     print("Cliente inicializado con API Key.")
 
