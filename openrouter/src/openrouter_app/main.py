@@ -13,3 +13,8 @@ if __name__ == "__main__":
     
     respuesta = client.razonador(user_prompt,system_prompt)
     print("Respuesta del razonador:", respuesta)
+
+    prompt=input("Escribe tu prompt: ")
+    response = client.LLM(prompt)
+    print("Respuesta del modelo:")
+    print(response)
