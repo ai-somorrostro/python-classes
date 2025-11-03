@@ -64,9 +64,14 @@ class OpenRouterClient:
         if response.status_code == 200:
             result = response.json()
             try:
-                # El README indica que la URL de la imagen está en choices[0].message.content
-                image_url = result["choices"][0]["message"]["content"]
-                return image_url
+                choices = result.get("choices")
+                if choices:
+                    message = choices[0]["message"]
+                    images = message.get("images")
+                    if images:
+                        # Retorna directamente la URL de la primera imagen
+                        return images[0]["image_url"]["url"]
+                return None  # No hay imágenes
             except Exception:
                 return f"Error procesando respuesta: {result}"
         else:
