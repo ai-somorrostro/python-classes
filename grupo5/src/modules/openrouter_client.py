@@ -17,7 +17,7 @@ class Op_client:
 
         if response.status_code == 200:
             result = response.json()
-            return result["choices"][0]["message"]["content"]
+            return result["choices"][0]["message"]
         else:
             return f"Error: {response.status_code} - {response.text}"
 
@@ -32,4 +32,24 @@ class Op_client:
                 }
             ]
         }
-        return self.__generar_requests(data)
+        return self.__generar_requests(data)["content"]
+
+    
+    def generate_image_with_model(self, prompt):
+        """Envía un prompt al modelo de generación de imágenes y devuelve la URL resultante.
+        Retorna un string con la URL si todo va bien, o lanza una excepción con detalles en caso contrario."""
+        data = {
+            "model": "openai/gpt-5-image-mini",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "modalities": ["image", "text"]
+        }
+        message =self.__generar_requests(data)
+        if message.get("images"):
+            for image in message["images"]:
+                image_url = image["image_url"]["url"]  # Base64 data URL
+                print(f"Generated image: {image_url[:50]}...")
