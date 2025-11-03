@@ -1,4 +1,6 @@
 import os
+import request
+import json
 
 class OpenRouterClient:
     def init(self, api_key):
@@ -8,9 +10,14 @@ class OpenRouterClient:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
+        
     def _post_request(self, model, messages):
-        print(f"Simulando request al modelo {model} con mensajes: {messages}")
-        return {"choices":[{"message":{"content":"respuesta simulada"}}]}
+        payload = {
+            "model": model,
+            "messages": messages
+        }
+        response = requests.post(self.base_url, headers=self.headers, json=payload)
+        return response.json()
 
     def llm_normal(self, prompt):
         print(f"Simulando LLM normal con prompt: {prompt}")
