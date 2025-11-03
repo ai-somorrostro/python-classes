@@ -64,14 +64,18 @@ class OpenRouterClient:
         if response.status_code == 200:
             result = response.json()
             try:
+                # Primero, intentamos obtener URL desde 'data'
+                if "data" in result and len(result["data"]) > 0:
+                    return result["data"][0]["url"]
+                # Si 'data' no existe, intentamos compatibilidad con 'choices'
                 choices = result.get("choices")
                 if choices:
-                    message = choices[0]["message"]
-                    images = message.get("images")
+                    message = choices[0].get("message", {})
+                    images = message.get("images", [])
                     if images:
-                        # Retorna directamente la URL de la primera imagen
-                        return images[0]["image_url"]["url"]
-                return None  # No hay imágenes
+                        return images[0].get("image_url", {}).get("url")
+                # Si nada funciona
+                return None
             except Exception:
                 return f"Error procesando respuesta: {result}"
         else:
