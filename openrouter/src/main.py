@@ -17,3 +17,10 @@ if __name__ == "__main__":
         print(f"Respuesta: {response_llm}\n")
     except ValueError as e:
         print(f"Error en LLM: {e}\n")
+
+    print("=== Prueba Razonador ===")
+    try:
+        response_reasoner = client.chat_reasoner("Razona paso a paso: ¿cuál es la capital de Francia y por qué?")
+        print(f"Respuesta: {response_reasoner}\n")
+    except ValueError as e:
+        print(f"Error en Razonador: {e}\n")
