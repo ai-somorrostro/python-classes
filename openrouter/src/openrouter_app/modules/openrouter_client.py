@@ -11,7 +11,6 @@ class OpenRouterClient:
         
     def razonador(self,user_message, system_prompt):
         """Make a request with a system prompt to define AI behavior"""
-        base_url="https://openrouter.ai/api/v1/chat/completions"
         data = {
             "model": "openai/gpt-oss-20b:free",
             "messages": [
@@ -25,7 +24,7 @@ class OpenRouterClient:
                 }
             ]
         }
-        response = requests.post(base_url, headers=self.headers, json=data)
+        response = requests.post(self.base_url, headers=self.headers, json=data)
 
         if response.status_code == 200:
             result = response.json()
