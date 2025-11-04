@@ -19,4 +19,5 @@ print(f"[DEBUG] API Key cargada: {api_key[:10]}...{api_key[-4:]}")  # Muestra so
 client = OpenRouterClient(api_key)
 
 # Probar
-print(client.llm_normal("Hola, ¿cómo estás?"))
+# print(client.llm_normal("Hola, ¿cómo estás?"))
+print(client.generar_imagen("Generame una imagen de un husky siberiano cualquiera."))
