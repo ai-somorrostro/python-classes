@@ -60,11 +60,5 @@ class Op_client:
         # Guardar como archivo PNG
         with open("grupo5/imagen_recibida.png", "wb") as f:
             f.write(base64.b64decode(message))
-
-        # Abrir la imagen
-        imagen = Image.open("grupo5/imagen_recibida.png")
-
-        # Mostrarla
-        imagen.show()
         print("Imagen guardada como 'imagen_recibida.png' en la carpeta 'grupo5'.")
        
