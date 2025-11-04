@@ -34,5 +34,11 @@ class OpenRouterClient:
     def chat_reasoner(self, prompt):
         print(f"Simulando razonador con prompt: {prompt}")
     
-    def generate_image(self, prompt):
-        print(f"Simulando generación de imagen con prompt: {prompt}")
+    def generate_image(self, prompt: str) -> str:
+    
+        model = "openai/gpt-5-image-mini"
+        
+        messages = [{"role": "user", "content": prompt}]
+        
+        response_json = self._make_request(model, messages)
+        print((response_json))
