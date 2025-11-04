@@ -8,14 +8,14 @@ def main():
     # Carga de variables de entorno
     load_dotenv()
     api_key = os.getenv("API_KEY")
-
+    api_key_image = os.getenv("API_KEY_IMAGEN")
     # Comprobacion de la api key
     if not "${API_KEY}":
         print("Por favor, configura en un fichero .env API_KEY con tu apikey de OpenRouter.")
         return
     
     # Creacion del cliente de OpenRouter
-    cliente = Op_client(api_key)
+    cliente = Op_client(api_key, api_key_image)
 
     # Apartado 1: Llamada LLM normal
     # Pedimos que rellene el prompt al usuario
