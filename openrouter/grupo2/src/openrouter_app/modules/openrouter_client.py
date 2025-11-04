@@ -26,7 +26,7 @@ class OpenRouterClient:
         return response.json()
     
     def chat_llm(self, prompt):
-        model = "google/gemini-flash-1.5"
+        model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
         print(f"Respuesta completa: {response}")
