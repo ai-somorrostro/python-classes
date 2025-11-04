@@ -53,4 +53,18 @@ class OpenRouterClient:
     def generar_imagen(self, prompt):
         messages = [{"role":"user", "content": prompt}]
         response = self._post_request("openai/gpt-5-image-mini", messages)
-        return response["choices"][0]["message"]["content"]
+        
+        # Obtenemos el contenido completo de la respuesta
+        content = response["choices"][0]["message"]["content"]
+        
+        # El contenido puede ser Markdown: "texto ![alt](URL) texto"
+        # Hacemos una extracción robusta de la URL
+        try:
+            # Dividimos el texto por `](` y tomamos la segunda parte.
+            # Luego, de esa parte, dividimos por `)` y tomamos la primera.
+            url = content.split("](")[1].split(")")[0]
+            return url
+        except IndexError:
+            # Si las divisiones fallan, puede que la respuesta SÍ fuera solo la URL.
+            # En ese caso, devolvemos el contenido tal cual.
+            return content
