@@ -43,8 +43,19 @@ class Op_client:
         }
         return self.__generar_requests(data, 1)["content"]
 
-    
-    def generate_image_with_model(self, prompt):
+    def llamada_modelo_razonador(self, prompt):
+        """Envía una solicitud al modelo razonador gpt-oss-20b de OpenRouter."""
+        data = {
+        "model": "openai/gpt-oss-20b:free",
+        "messages": [
+            {"role": "user", 
+             "content": prompt}
+        ]
+    }
+        return self.__generar_requests(data, 1)["content"]
+
+
+    def llamada_img_gen(self, prompt):
         """Envía un prompt al modelo de generación de imágenes y devuelve la URL resultante.
         Retorna un string con la URL si todo va bien, o lanza una excepción con detalles en caso contrario."""
         data = {
