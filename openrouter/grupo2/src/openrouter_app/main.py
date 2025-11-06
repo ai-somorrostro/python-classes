@@ -1,9 +1,10 @@
 from modules.openrouter_client import OpenRouterClient
 
 def main():
-    print("=== OpenRouter Client - Version 1: Clase Vacia ===")
     client = OpenRouterClient()
     print(f"Cliente creado: {client}")
+    print(f"Base URL: {client.base_url}")
+    print(f"Headers: {client.headers}")
 
 if __name__ == "__main__":
     main()
