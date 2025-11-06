@@ -90,14 +90,14 @@ def main():
         elif choice == '3':
             _run_image(client)
         elif choice == '0':
-            print("Hasta luego 👋")
+            print("Hasta luego")
             break
         else:
             print("Opción no válida. Inténtalo de nuevo.")
 
         again = input("\n¿Quieres realizar otra operación? (s/n): ").strip().lower()
         if again != 's':
-            print("Hasta luego 👋")
+            print("Hasta luego")
             break
 
 
