@@ -15,3 +15,16 @@ class OpenRouterClient:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
+    
+    def _make_request(self, model, messages):
+        print(f"Simulando request al modelo {model} con mensajes: {messages}")
+        return {"choices": [{"message": {"content": "respuesta simulada"}}]}
+    
+    def chat_llm(self, prompt):
+        print(f"Simulando LLM normal con prompt: {prompt}")
+    
+    def chat_reasoner(self, prompt):
+        print(f"Simulando razonador con prompt: {prompt}")
+    
+    def generate_image(self, prompt):
+        print(f"Simulando generación de imagen con prompt: {prompt}")
