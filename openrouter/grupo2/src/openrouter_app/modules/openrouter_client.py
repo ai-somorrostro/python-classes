@@ -32,7 +32,10 @@ class OpenRouterClient:
         print(f"Respuesta completa: {response}")
     
     def chat_reasoner(self, prompt):
-        print(f"Simulando razonador con prompt: {prompt}")
+        model = "microsoft/phi-4-reasoning-plus"
+        messages = [{"role": "user", "content": prompt}]
+        response = self._make_request(model, messages)
+        print(f"Simulando razonador con prompt: {response}")
     
     def generate_image(self, prompt: str) -> str:
     
