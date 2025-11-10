@@ -56,12 +56,8 @@ import os
 load_dotenv()
 
 def main():
-    client = OpenRouterClient()
-    print("\n=== Imagen ===")
-    print(client.generate_image("una ciudad futurista al atardecer"))
-    # Carga las variables de entorno (.env)
-    load_dotenv()
-    api_key = os.getenv("OPENROUTER_API_KEY")
+   
+   
 
     if not api_key:
         print("❌ No se encontró la variable OPENROUTER_API_KEY en el entorno.")
@@ -100,6 +96,13 @@ def main():
     print(f"\nEnviando prompt al LLM: '{prompt}'")
     
     clean_response = client.call_llm(prompt)
+
+    print("\n=== Imagen ===")
+    print(client.generate_image("una ciudad futurista al atardecer"))
+    # Carga las variables de entorno (.env)
+    load_dotenv()
+    api_key = os.getenv("OPENROUTER_API_KEY")
+
     
     print("\n--- Respuesta Procesada del LLM ---")
     print(clean_response)
