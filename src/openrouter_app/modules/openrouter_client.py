@@ -51,6 +51,7 @@ class OpenRouterClient:
             content = f"Error en la solicitud: {e}"
 
         return content
+    #Modelo de LLM-Normal
     def call_llm(self, prompt: str) -> str:
         model = "google/gemini-2.0-flash-exp:free"
         messages = [{"role": "user", "content": prompt}]
