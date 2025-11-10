@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from services.openrouter_client import OpenRouterClient
 from fastapi import FastAPI
-from app.api.llm_api import LLMApi
+from api.llm_api import LLMApi
 
 '''
 # Cargar variables de entorno
