@@ -1,8 +1,29 @@
 import os
-from modules.openrouter_client import OpenRouterClient
+
+import requests
+from grupo4.app.services.openrouter_client import OpenRouterClient
 import base64
 import datetime
 from urllib.parse import urlparse
+
+def run_api_server(api_instance, port=8001):
+    """Ejecuta el servidor FastAPI en un thread separado"""
+    api_instance.run(port=port, reload=False)
+
+def wait_for_api(base_url="http://localhost:8001", max_retries=10):
+    """Espera a que la API esté lista"""
+    for i in range(max_retries):
+        try:
+            response = requests.get(f"{base_url}/health")
+            if response.status_code == 200:
+                print("✓ API lista")
+                return True
+        except requests.exceptions.ConnectionError:
+            datetime.time.sleep(0.5)
+    print("Error: No se pudo conectar con la API")
+    return False
+
+
 if __name__ == "__main__":
     fecha = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     # Cargar API key desde .env
