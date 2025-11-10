@@ -1,4 +1,3 @@
-# Código de openrouter_client.py para la Versión 5 - LLM Normal
 import requests
 class OpenRouterClient:
 
@@ -14,7 +13,7 @@ class OpenRouterClient:
     def is_configured(self) -> bool:
         """Verifica que haya una API key configurada."""
         return bool(self.api_key)
-
+    # Modelo de generación de imagenes
     def generate_image(self,prompt):
         r=requests.post("https://openrouter.ai/api/v1/chat/completions",
             headers=self.headers,
@@ -34,7 +33,7 @@ class OpenRouterClient:
         response.raise_for_status()  # lanza error si hay fallo HTTP
 
         return response.json()
-
+    # Modelo razonador
     def ask_reasoner(self, prompt: str) -> str:
         """
         Envía un prompt al modelo razonador (openai/gpt-oss-20b:free)
@@ -52,3 +51,10 @@ class OpenRouterClient:
             content = f"Error en la solicitud: {e}"
 
         return content
+    def call_llm(self, prompt: str) -> str:
+        model = "google/gemini-2.0-flash-exp:free"
+        messages = [{"role": "user", "content": prompt}]
+        data = self._make_request(model, messages)
+        if data and "choices" in data and len(data["choices"]) > 0:
+            return data["choices"][0]["message"]["content"]
+        return "No se pudo extraer una respuesta válida."
