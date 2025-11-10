@@ -75,6 +75,28 @@ Alternativamente, activa el entorno y ejecuta sin exportar la variable en la mis
 PYTHONPATH=src python -m openrouter_app.main
 ```
 
+## FastAPI LLM Gateway (nuevo)
+
+Se ha añadido una pequeña API basada en FastAPI que actúa como gateway hacia OpenRouter.
+
+- Documentación automática: http://localhost:8000/docs
+- Endpoints disponibles: `/api/llm/generate-image` (GET, query param `prompt`), `/api/llm/methods`
+
+### Ejecutar con Docker
+
+1. Construir y levantar el contenedor:
+
+```bash
+docker-compose up --build
+```
+
+2. Abrir Swagger UI en:
+
+```text
+http://localhost:8000/docs
+```
+
+
 openrouter/
 ├── src/
          openrouter_app
