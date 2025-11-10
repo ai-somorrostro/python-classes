@@ -3,6 +3,9 @@ import requests
 class OpenRouterClient:
     """Cliente de OpenRouter — versión final (solo modelo razonador)."""
 
+# Código de openrouter_client.py para la Versión 5 - LLM Normal
+import requests
+class OpenRouterClient:
     def __init__(self, api_key: str):
         """Inicializa la clase con la API Key y configuración base."""
         self.api_key = api_key
