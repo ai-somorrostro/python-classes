@@ -53,7 +53,12 @@ from openrouter_app.modules.openrouter_client import OpenRouterClient
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 def main():
+    client = OpenRouterClient()
+    print("\n=== Imagen ===")
+    print(client.generate_image("una ciudad futurista al atardecer"))
     # Carga las variables de entorno (.env)
     load_dotenv()
     api_key = os.getenv("OPENROUTER_API_KEY")
