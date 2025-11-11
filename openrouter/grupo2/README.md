@@ -59,7 +59,7 @@ openrouter/grupo2/
 
 ## 🔧 Requisitos
 
-- Python 3.11+
+- Python 3.10.12+
 - Docker y Docker Compose (para ejecución en contenedor)
 - API Key de OpenRouter
 
