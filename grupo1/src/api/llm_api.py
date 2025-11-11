@@ -30,7 +30,7 @@ class ImageRequest(BaseModel):
 def razonador(req: ChatRequest):
     """Usa un system prompt y un mensaje del usuario"""
     try:
-        response = client.razonador(req.user_message, req.system_prompt)
+        response = client.reasoner(req.user_message, req.system_prompt)
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -40,7 +40,7 @@ def razonador(req: ChatRequest):
 def llm(req: LLMRequest):
     """Llama al modelo Llama-4 Maverick"""
     try:
-        response = client.LLM(req.prompt)
+        response = client.llm(req.prompt)
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
