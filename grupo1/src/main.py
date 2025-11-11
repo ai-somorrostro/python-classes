@@ -2,6 +2,7 @@ from src.services.openrouter_client import OpenRouterClient
 from dotenv import load_dotenv
 import os
 import base64
+import requests
 import sys
 
 load_dotenv() 
@@ -41,21 +42,25 @@ if __name__ == "__main__":
         f.write(image_bytes)
 
     print("Imagen guardada como imagen_generada.png")"""
+
+    user_message=input("Prompt para el razonador: ")
     
     chat_payload = {
-        "user_message": "Explícame la teoría de la relatividad en 2 frases",
+        "user_message": user_message,
         "system_prompt": "Eres un experto explicando conceptos complejos de manera simple."
     }
     response = requests.post(f"{API_URL}/razonador", json=chat_payload)
     print("Razonador:", response.json())
 
-    
-    llm_payload = {"prompt": "Escribe un poema sobre la inteligencia artificial"}
+    prompt_llm=input("Prompt para el LLM: ")
+
+    llm_payload = {"prompt": prompt_llm}
     response = requests.post(f"{API_URL}/llm", json=llm_payload)
     print("LLM:", response.json())
     
-    
-    image_payload = {"prompt": "Un robot pintando un cuadro al estilo Van Gogh"}
+    image_llm=input("Prompt para el LLM: ")
+
+    image_payload = {"prompt": image_llm}
     response = requests.post(f"{API_URL}/image", json=image_payload)
     print("Imagen URL:", response.json())
     
