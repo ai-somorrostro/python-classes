@@ -25,7 +25,6 @@ docker-compose up --build
 
 - **API REST**: Endpoints HTTP para LLM, Razonador e Imagen
 - **Documentación Swagger**: Interfaz interactiva en `/docs`
-- **Documentación ReDoc**: Documentación alternativa en `/redoc`
 - **Dockerizado**: Fácil despliegue con Docker y Docker Compose
 - **Validación de Prompts**: Validación automática de entradas vacías
 - **Validación de API Key**: Formato correcto `sk-or-v1-...` al iniciar
@@ -233,7 +232,6 @@ Limpia completamente el cache en memoria.
 Una vez ejecutada la aplicación, accede a:
 
 - **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
 
 ## 🗂️ Cache (Opcional)
 
@@ -354,7 +352,7 @@ Respuesta esperada:
 
 - Los endpoints aceptan parámetros como query strings (no JSON body)
 - Sin uso de Pydantic según especificaciones del proyecto
-- Documentación interactiva disponible en `/docs` (Swagger) y `/redoc`
+- Documentación interactiva disponible en `/docs` (Swagger)
 - El timeout de peticiones a OpenRouter es de 30 segundos
 - Validación automática de prompts vacíos
 - Logging detallado para debugging
@@ -397,7 +395,7 @@ Cumplimiento de requisitos según [Issue #9](https://github.com/ai-somorrostro/p
 - ✅ **Comunicación con clase OpenRouter**: `src/openrouter_app/services/openrouter_client.py`
 - ✅ **Un endpoint por método de OpenRouter**: `/chat/llm`, `/chat/reasoner`, `/image/generate`
 - ✅ **Sin Pydantic**: Parámetros como query strings
-- ✅ **Swagger operativo**: Accesible en `/docs` y `/redoc`
+- ✅ **Swagger operativo**: Accesible en `/docs`
 - ✅ **Docker funcional**: `docker-compose up --build` en puerto 8000
 - ✅ **Código en rama del grupo**: `grupo2-v6-fastapi`
 - ✅ **README con documentación**: Completo con ejemplos y troubleshooting

@@ -3,7 +3,7 @@ OpenRouter API Gateway - Aplicación Principal FastAPI.
 
 Este módulo inicializa la aplicación FastAPI y registra los routers
 para los endpoints de OpenRouter. Proporciona documentación automática
-mediante Swagger UI y ReDoc.
+mediante Swagger UI.
 
 Endpoints del sistema:
     - GET /: Información de bienvenida y enlaces a documentación
@@ -16,7 +16,6 @@ Endpoints de OpenRouter (en /openrouter):
 
 Documentación:
     - Swagger UI: /docs
-    - ReDoc: /redoc
 
 Example:
     Ejecutar el servidor:
@@ -46,8 +45,7 @@ app = FastAPI(
     title="OpenRouter API Gateway",
     description="API Gateway para interactuar con modelos de OpenRouter",
     version="6.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url="/docs"
 )
 
 # Registrar el router de la API
@@ -93,8 +91,7 @@ async def root():
         "uptime_seconds": round(uptime, 2),
         "cache_enabled": cache_enabled,
         "endpoints": {
-            "docs": "/docs",
-            "redoc": "/redoc",
+        "docs": "/docs",
             "health": "/health",
             "openrouter": {
                 "chat_llm": "/openrouter/chat/llm",
