@@ -39,23 +39,20 @@ class OpenRouterClient:
         except requests.exceptions.RequestException as e:
             raise ValueError(f"Error en request: {e}")
     
-    def chat_llm(self, prompt: str) -> str:
+def chat_llm(self, prompt: str, model: str = "google/gemini-2.0-flash-lite-001") -> str:
         """Devuelve solo el texto del primer choice."""
-        model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
         return response["choices"][0]["message"]["content"]
     
-    def chat_reasoner(self, prompt: str) -> str:
+    def chat_reasoner(self, prompt: str, model: str = "openai/gpt-oss-20b:free") -> str:
         """Devuelve solo el texto del razonador."""
-        model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
         return response["choices"][0]["message"]["content"]
     
-    def generate_image(self, prompt: str) -> str:
+    def generate_image(self, prompt: str, model: str = "google/gemini-2.5-flash-image") -> str:
         """Devuelve la URL (o data URL) de la primera imagen generada."""
-        model = "google/gemini-2.5-flash-image"
         messages = [{"role": "user", "content": prompt}]
         extra = {"modalities": ["image", "text"]}
         data = self._make_request(model, messages, extra)
