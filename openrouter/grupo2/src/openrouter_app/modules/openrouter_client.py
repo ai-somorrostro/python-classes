@@ -30,7 +30,7 @@ class OpenRouterClient:
             payload.update(extra_params)
 
         try:
-            response = requests.post(self.base_url, headers=self.headers, json=payload)
+            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
             response.raise_for_status()
             data = response.json()
             if isinstance(data, dict) and data.get("error"):
