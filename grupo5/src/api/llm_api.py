@@ -31,7 +31,7 @@ async def root():
     return {"message": "hola, caracola!"}
 
 @app.post("/mensaje_llm")
-async def mensaje(prompt: TextoEntrada):
+async def mensaje(prompt: TextoEntrada) -> dict:
     if prompt.modelo == "string":
         mensaje = cliente.llamada_LLM_normal(prompt.mensaje, llamada_llm_normal)
     else:  
@@ -40,7 +40,7 @@ async def mensaje(prompt: TextoEntrada):
     return {"IA": f"{mensaje}!"}
 
 @app.post("/mensaje_modelo_razonador")
-async def mensaje(prompt: TextoEntrada):
+async def mensaje(prompt: TextoEntrada) -> dict:
     if prompt.modelo == "string":
         mensaje = cliente.llamada_modelo_razonador(prompt.mensaje, llamada_modelo_razonador)
     else:
@@ -49,7 +49,7 @@ async def mensaje(prompt: TextoEntrada):
     return {"IA": f"{mensaje}!"}
 
 @app.post("/imagen")
-def obtener_imagen(prompt: TextoEntrada):
+def obtener_imagen(prompt: TextoEntrada) -> FileResponse:
     if prompt.modelo == "string":
         cliente.llamada_img_gen(prompt.mensaje, llamada_img_gen)
     else:

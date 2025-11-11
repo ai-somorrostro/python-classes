@@ -4,7 +4,7 @@ import base64
 class OpR_client:
     """Clase cliente para interactuar con la API de OpenRouter."""
 
-    def __init__(self, api_key, api_key_image):
+    def __init__(self, api_key: str, api_key_image: str):
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
         self.headers = {
             "Authorization": f"Bearer {api_key}",
@@ -16,7 +16,7 @@ class OpR_client:
         }
 
 
-    def __generar_requests(self, data, opcion):
+    def __generar_requests(self, data: dict, opcion: int):
         """Genera y envía una solicitud POST a la API de OpenRouter."""
         
         if opcion == 1:
@@ -57,7 +57,7 @@ class OpR_client:
 
     def llamada_modelo_razonador(self, prompt: str, modelo: str) -> str:
         """
-    Envía una solicitud de texto básica al modelo Gemini 2.0 de OpenRouter.
+    Envía una solicitud de texto básica al modelo razonador de OpenRouter.
     
     Args:
         prompt (str): Texto de entrada para el modelo.
@@ -81,7 +81,7 @@ class OpR_client:
 
     def llamada_img_gen(self, prompt: str, modelo: str) -> str:
         """
-    Envía una solicitud de texto básica al modelo Gemini 2.0 de OpenRouter.
+    Envía una solicitud de texto básica al modelo generador de imagenes 2.0 de OpenRouter.
     
     Args:
         prompt (str): Texto de entrada para el modelo.
