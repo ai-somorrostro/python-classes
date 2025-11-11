@@ -30,7 +30,7 @@ class OpenRouterClient:
             payload.update(extra_params)
 
         try:
-            response = requests.post(self.base_url, headers=self.headers, json=payload)
+            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
             response.raise_for_status()
             data = response.json()
             if isinstance(data, dict) and data.get("error"):
@@ -41,6 +41,8 @@ class OpenRouterClient:
     
     def chat_llm(self, prompt: str) -> str:
         """Devuelve solo el texto del primer choice."""
+        if not prompt or not prompt.strip():
+            raise ValueError("El prompt no puede estar vacío")
         model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
@@ -48,6 +50,8 @@ class OpenRouterClient:
     
     def chat_reasoner(self, prompt: str) -> str:
         """Devuelve solo el texto del razonador."""
+        if not prompt or not prompt.strip():
+            raise ValueError("El prompt no puede estar vacío")
         model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
@@ -55,6 +59,8 @@ class OpenRouterClient:
     
     def generate_image(self, prompt: str) -> str:
         """Devuelve la URL (o data URL) de la primera imagen generada."""
+        if not prompt or not prompt.strip():
+            raise ValueError("El prompt no puede estar vacío")
         model = "google/gemini-2.5-flash-image"
         messages = [{"role": "user", "content": prompt}]
         extra = {"modalities": ["image", "text"]}
