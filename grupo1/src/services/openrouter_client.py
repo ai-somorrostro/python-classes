@@ -9,7 +9,7 @@ class OpenRouterClient:
             "Content-Type": "application/json"
         }
         
-    def reasoner(self,user_message, system_prompt):
+    def reasoner(self,user_message: str, system_prompt: str)-> str:
         """Make a request with a system prompt to define AI behavior"""
         data = {
             "model": "openai/gpt-oss-20b:free",
@@ -50,7 +50,7 @@ class OpenRouterClient:
         data = response.json()
         return data["choices"][0]["message"]["content"]
     
-    def generate_image(self, prompt: str):
+    def generate_image(self, prompt: str)-> str:
         """Metodo para generar una imagen usando el modelo openai/gpt-5-image-mini"""
         data = {
             "model": "openai/gpt-5-image-mini",
