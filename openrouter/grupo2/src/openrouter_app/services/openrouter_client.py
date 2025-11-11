@@ -39,6 +39,7 @@ Example:
 import os
 import logging
 import time
+import hashlib
 from typing import Optional, Dict, List
 import requests
 from dotenv import load_dotenv
@@ -102,7 +103,7 @@ class OpenRouterClient:
         Obtén tu API key en: https://openrouter.ai/keys
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, enable_cache: bool = False):
         if api_key is None:
             api_key = os.getenv('OPENROUTER_API_KEY')
         if not api_key:
@@ -119,7 +120,13 @@ class OpenRouterClient:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
-        logger.info("OpenRouterClient inicializado correctamente con API key válida")
+        
+        # Cache simple en memoria (solo para desarrollo/testing)
+        self.enable_cache = enable_cache
+        self._cache: Dict[str, Dict] = {}
+        
+        cache_status = "habilitada" if enable_cache else "deshabilitada"
+        logger.info(f"OpenRouterClient inicializado correctamente con API key válida (cache {cache_status})")
     
     @staticmethod
     def _validate_api_key_format(api_key: str) -> bool:
@@ -136,6 +143,69 @@ class OpenRouterClient:
             Las API keys de OpenRouter tienen formato: sk-or-v1-...
         """
         return api_key.startswith('sk-or-v1-') and len(api_key) > 20
+    
+    def _generate_cache_key(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None) -> str:
+        """
+        Genera una clave única para el cache basada en los parámetros de la request.
+        
+        Args:
+            model (str): Nombre del modelo
+            messages (List[Dict]): Lista de mensajes
+            extra_params (Optional[Dict]): Parámetros adicionales
+            
+        Returns:
+            str: Hash MD5 único representando la combinación de parámetros
+        """
+        cache_data = {
+            "model": model,
+            "messages": messages,
+            "extra_params": extra_params or {}
+        }
+        cache_string = str(cache_data)
+        return hashlib.md5(cache_string.encode()).hexdigest()
+    
+    def _get_from_cache(self, cache_key: str) -> Optional[Dict]:
+        """
+        Obtiene una respuesta del cache si existe.
+        
+        Args:
+            cache_key (str): Clave del cache
+            
+        Returns:
+            Optional[Dict]: Respuesta cacheada o None si no existe
+        """
+        if not self.enable_cache:
+            return None
+        
+        cached_response = self._cache.get(cache_key)
+        if cached_response:
+            logger.info(f"Cache HIT: Usando respuesta cacheada para key {cache_key[:8]}...")
+            return cached_response
+        return None
+    
+    def _save_to_cache(self, cache_key: str, response: Dict) -> None:
+        """
+        Guarda una respuesta en el cache.
+        
+        Args:
+            cache_key (str): Clave del cache
+            response (Dict): Respuesta a guardar
+        """
+        if not self.enable_cache:
+            return
+        
+        self._cache[cache_key] = response
+        logger.debug(f"Cache SAVE: Respuesta guardada con key {cache_key[:8]}... (total: {len(self._cache)} entradas)")
+    
+    def clear_cache(self) -> None:
+        """
+        Limpia completamente el cache en memoria.
+        
+        Note:
+            Útil para testing o cuando se necesita forzar nuevas requests.
+        """
+        self._cache.clear()
+        logger.info("Cache limpiado completamente")
     
     def _make_request(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None, max_retries: int = 3) -> Dict:
 
@@ -157,7 +227,14 @@ class OpenRouterClient:
         Note:
             Los reintentos se aplican solo para errores de red temporales y timeouts.
             Usa backoff exponencial: espera 1s, 2s, 4s entre reintentos.
+            Si el cache está habilitado, verifica primero antes de hacer la request.
         """
+        # Intentar obtener del cache primero
+        cache_key = self._generate_cache_key(model, messages, extra_params)
+        cached_response = self._get_from_cache(cache_key)
+        if cached_response:
+            return cached_response
+        
         payload: Dict = {
             "model": model,
             "messages": messages,
@@ -180,6 +257,9 @@ class OpenRouterClient:
                 
                 # Logging de métricas de uso (tokens y costos)
                 self._log_usage_metrics(data, model)
+                
+                # Guardar en cache si está habilitado
+                self._save_to_cache(cache_key, data)
                 
                 logger.debug(f"Respuesta exitosa de OpenRouter para modelo {model}")
                 return data

@@ -23,6 +23,7 @@ Attributes:
 
 from fastapi import APIRouter, HTTPException
 import logging
+import os
 from ..services.openrouter_client import OpenRouterClient
 
 # Configurar logger
@@ -35,8 +36,14 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# Instancia del cliente OpenRouter
-client = OpenRouterClient()
+# Instancia del cliente OpenRouter con cache opcional
+enable_cache = os.getenv("ENABLE_CACHE", "false").lower() == "true"
+client = OpenRouterClient(enable_cache=enable_cache)
+
+if enable_cache:
+    logger.info("Cache habilitada para el cliente OpenRouter (solo desarrollo/testing)")
+else:
+    logger.info("Cache deshabilitada para el cliente OpenRouter")
 
 
 @router.post("/chat/llm")
