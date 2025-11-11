@@ -1,16 +1,19 @@
+
 import os
-
+from dotenv import load_dotenv
+from api.llm_api import llm_api
+import threading
+import time
 import requests
-from grupo4.app.services.openrouter_client import OpenRouterClient
-import base64
-import datetime
-from urllib.parse import urlparse
+from services.openrouter_client import OpenRouterClient
 
-def run_api_server(api_instance, port=8001):
+load_dotenv()  
+
+def run_api_server(api_instance, port=8000):
     """Ejecuta el servidor FastAPI en un thread separado"""
     api_instance.run(port=port, reload=False)
 
-def wait_for_api(base_url="http://localhost:8001", max_retries=10):
+def wait_for_api(base_url="http://localhost:8000", max_retries=10):
     """Espera a que la API esté lista"""
     for i in range(max_retries):
         try:
@@ -19,44 +22,36 @@ def wait_for_api(base_url="http://localhost:8001", max_retries=10):
                 print("✓ API lista")
                 return True
         except requests.exceptions.ConnectionError:
-            datetime.time.sleep(0.5)
+            time.sleep(0.5)
     print("Error: No se pudo conectar con la API")
     return False
 
-
 if __name__ == "__main__":
-    fecha = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    # Cargar API key desde .env
     api_key = os.getenv('OPENROUTER_API_KEY')
     if not api_key:
         print("Error: Configura OPENROUTER_API_KEY en el archivo .env")
         exit(1)
     
-    # Crear instancia de la clase
-    client = OpenRouterClient()
+    print("Inicializando OpenRouterClient...")
+    client = OpenRouterClient(api_key)
     
-    # print("=== Prueba LLM Normal (Gemini) ===")
-    # try:
-    #     response_llm = client.chat_llm("Hola, explícame brevemente qué es Python.")
-    #     print(f"Respuesta: {response_llm}\n")
-    # except ValueError as e:
-    #     print(f"Error en LLM: {e}\n")
+    print("Inicializando llm_api...")
+    default_prompt = "Hola! Estoy probando respuestas via API"  
+    api = llm_api(client, default_prompt=default_prompt) 
     
-    # print("=== Prueba Razonador ===")
-    # try:
-    #     response_reasoner = client.chat_reasoner("Razona paso a paso: ¿cuál es la capital de Francia y por qué?")
-    #     print(f"Respuesta: {response_reasoner}\n")
-    # except ValueError as e:
-    #     print(f"Error en Razonador: {e}\n")
+    print("Iniciando servidor FastAPI...")
+    api_thread = threading.Thread(target=run_api_server, args=(api, 8000), daemon=True)
+    api_thread.start()
     
-    print("=== Prueba Generación de Imagen ===")
+    if not wait_for_api():
+        exit(1)
+    
+    base_url = "http://localhost:8000"
+    
+    print("\n✓ Pruebas completadas. La API sigue corriendo en http://localhost:8000")
+    print("Presiona Ctrl+C para salir")
     try:
-        image_url = client.generate_image("Donald trump fumandose un porro con Netanyahu")
-        if image_url.startswith('data:image'):
-            header, data = image_url.split(',', 1)
-            img_data = base64.b64decode(data)
-            with open(f'openrouter/images/imagen{fecha}.png', 'wb') as f:
-                f.write(img_data)
-            print("Imagen guardada como 'imagen_generada.png'. Ábrela con cualquier visor de imágenes.")
-    except ValueError as e:
-        print(f"Error en Generación de Imagen: {e}")
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n✓ Cerrando servidor...")
