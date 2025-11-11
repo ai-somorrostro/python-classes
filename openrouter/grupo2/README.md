@@ -4,7 +4,7 @@ API Gateway desarrollada con FastAPI para interactuar con los modelos de OpenRou
 
 **Issue #9**: Integración de una Clase para APIs REST en el Proyecto
 
-## ⚡ Inicio Rápido
+## Inicio Rápido
 
 ```bash
 # 1. Clonar y navegar al proyecto
@@ -21,7 +21,7 @@ docker-compose up --build
 # Swagger UI: http://localhost:8000/docs
 ```
 
-## 🚀 Características
+## Características
 
 - **API REST**: Endpoints HTTP para LLM, Razonador e Imagen
 - **Documentación Swagger**: Interfaz interactiva en `/docs`
@@ -36,7 +36,7 @@ docker-compose up --build
 - **Cache Opcional**: Cache LRU en memoria (desarrollo/testing)
 - **Modelos Configurables**: Parámetros opcionales para cambiar modelos
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 openrouter/grupo2/
@@ -57,13 +57,13 @@ openrouter/grupo2/
 └── README.md                    # Este archivo
 ```
 
-## 🔧 Requisitos
+## Requisitos
 
 - Python 3.10.12+
 - Docker y Docker Compose (para ejecución en contenedor)
 - API Key de OpenRouter
 
-## ⚙️ Configuración
+## Configuración
 
 1. **Copiar archivo de ejemplo `.env.example` a `.env`** en la carpeta `openrouter/grupo2/`:
 
@@ -83,7 +83,7 @@ OPENROUTER_API_KEY=tu_api_key_aqui
 pip install -r ../../requirements.txt
 ```
 
-## 🐳 Ejecución con Docker
+## Ejecución con Docker
 
 ### Requisitos previos
 
@@ -127,7 +127,7 @@ docker build -f openrouter/grupo2/Dockerfile -t openrouter-fastapi .
 docker run -p 8000:8000 --env-file openrouter/grupo2/.env openrouter-fastapi
 ```
 
-## 💻 Ejecución Local (sin Docker)
+## Ejecución Local (sin Docker)
 
 Desde la carpeta `openrouter/grupo2`:
 
@@ -142,7 +142,7 @@ pip install -r ../../requirements.txt
 PYTHONPATH=src python -m uvicorn openrouter_app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 📡 Endpoints de la API
+## Endpoints de la API
 
 ### Endpoints Principales
 
@@ -227,13 +227,13 @@ Limpia completamente el cache en memoria.
 }
 ```
 
-## 📚 Documentación Interactiva
+## Documentación Interactiva
 
 Una vez ejecutada la aplicación, accede a:
 
 - **Swagger UI**: http://localhost:8000/docs
 
-## 🗂️ Cache (Opcional)
+## Cache (Opcional)
 
 El sistema incluye un cache LRU en memoria para evitar llamadas duplicadas a la API de OpenRouter.
 
@@ -269,7 +269,7 @@ curl -X DELETE http://localhost:8000/openrouter/cache/clear
 - ❌ **Producción**: No recomendado (las respuestas deben ser frescas)
 - ❌ **Contenido dinámico**: Cuando se esperan respuestas diferentes
 
-## 🧪 Ejemplos de Uso
+## Ejemplos de Uso
 
 ### Usando cURL
 
@@ -310,7 +310,7 @@ response = requests.post(
 print(response.json())
 ```
 
-## 🛠️ Desarrollo
+## Desarrollo
 
 ### Arquitectura
 
@@ -333,7 +333,7 @@ print(response.json())
 2. Crea el endpoint correspondiente en `api/llm_api.py`
 3. El router se registra automáticamente en `main.py`
 
-## 🔍 Health Check
+## Health Check
 
 Para verificar que el servicio está funcionando:
 
@@ -348,7 +348,7 @@ Respuesta esperada:
 }
 ```
 
-## 📝 Notas
+## Notas
 
 - Los endpoints aceptan parámetros como query strings (no JSON body)
 - Sin uso de Pydantic según especificaciones del proyecto
@@ -358,7 +358,7 @@ Respuesta esperada:
 - Logging detallado para debugging
 - Soporta múltiples formatos de respuesta de OpenRouter
 
-## 🐛 Solución de Problemas
+## Solución de Problemas
 
 ### Error: "Se requiere una API key válida"
 
@@ -381,13 +381,13 @@ cd openrouter/grupo2
 PYTHONPATH=src python -m uvicorn openrouter_app.main:app
 ```
 
-## 📄 Licencia
+## Licencia
 
 Proyecto educativo - Grupo 2
 
 ---
 
-## ✅ Checklist Issue #9
+## Checklist Issue #9
 
 Cumplimiento de requisitos según [Issue #9](https://github.com/ai-somorrostro/python-classes/issues/9):
 
