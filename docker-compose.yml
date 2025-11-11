@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  llm_api:
+    build: .
+    container_name: llm_api_container
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./grupo6/src/app:/app
+    environment:
+      - ENV=production
