@@ -174,8 +174,16 @@ class OpenRouterClient:
             logger.error(f"Timeout en request a OpenRouter (modelo: {model})")
             raise ValueError("La solicitud a OpenRouter excedió el tiempo límite de 30 segundos")
         except requests.exceptions.HTTPError as e:
-            logger.error(f"HTTP Error {e.response.status_code}: {e.response.text[:200]}")
-            raise ValueError(f"Error HTTP {e.response.status_code}: {str(e)}")
+            status_code = e.response.status_code
+            
+            # Manejo específico de Rate Limiting
+            if status_code == 429:
+                retry_after = e.response.headers.get('Retry-After', 'desconocido')
+                logger.warning(f"Rate limit alcanzado. Reintentar después de: {retry_after} segundos")
+                raise ValueError(f"Límite de requests alcanzado. Intenta de nuevo en {retry_after} segundos")
+            
+            logger.error(f"HTTP Error {status_code}: {e.response.text[:200]}")
+            raise ValueError(f"Error HTTP {status_code}: {str(e)}")
         except requests.exceptions.RequestException as e:
             logger.error(f"Error en request a OpenRouter: {str(e)}")
             raise ValueError(f"Error en request: {e}")
