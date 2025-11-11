@@ -40,7 +40,7 @@ client = OpenRouterClient()
 
 
 @router.post("/chat/llm")
-async def chat_llm_endpoint(prompt: str):
+async def chat_llm_endpoint(prompt: str, model: str = "google/gemini-2.0-flash-lite-001"):
     """
     Genera respuestas usando el modelo LLM de Google Gemini 2.0 Flash Lite.
     
@@ -52,6 +52,9 @@ async def chat_llm_endpoint(prompt: str):
         prompt (str): Texto de entrada para el modelo. Puede ser una pregunta,
                      instrucción o cualquier texto que requiera procesamiento
                      por el LLM. No puede estar vacío.
+        model (str, optional): Identificador del modelo a utilizar.
+                     Por defecto: "google/gemini-2.0-flash-lite-001"
+                     Permite usar modelos alternativos de OpenRouter.
     
     Returns:
         dict: Objeto JSON con la estructura:
@@ -64,26 +67,37 @@ async def chat_llm_endpoint(prompt: str):
     
     Example:
         ```bash
+        # Modelo por defecto
         curl -X POST "http://localhost:8000/openrouter/chat/llm?prompt=Explica qué es FastAPI"
+        
+        # Modelo alternativo
+        curl -X POST "http://localhost:8000/openrouter/chat/llm?prompt=Hola&model=openai/gpt-4-turbo"
         ```
         
         ```python
         import requests
+        # Modelo por defecto
         response = requests.post(
             "http://localhost:8000/openrouter/chat/llm",
             params={"prompt": "¿Qué es Python?"}
+        )
+        # Modelo alternativo
+        response = requests.post(
+            "http://localhost:8000/openrouter/chat/llm",
+            params={"prompt": "¿Qué es Python?", "model": "anthropic/claude-3-opus"}
         )
         print(response.json()["response"])
         ```
     
     Note:
-        - Modelo usado: google/gemini-2.0-flash-lite-001
+        - Modelo por defecto: google/gemini-2.0-flash-lite-001
         - Timeout: 30 segundos
         - Requiere OPENROUTER_API_KEY válida en variables de entorno
+        - Ver modelos disponibles: https://openrouter.ai/models
     """
-    logger.info(f"Endpoint /chat/llm llamado con prompt de longitud {len(prompt)}")
+    logger.info(f"Endpoint /chat/llm llamado con prompt de longitud {len(prompt)}, modelo: {model}")
     try:
-        response = client.chat_llm(prompt)
+        response = client.chat_llm(prompt, model=model)
         logger.info("Respuesta generada exitosamente en /chat/llm")
         return {"response": response}
     except ValueError as e:
@@ -95,7 +109,7 @@ async def chat_llm_endpoint(prompt: str):
 
 
 @router.post("/chat/reasoner")
-async def chat_reasoner_endpoint(prompt: str):
+async def chat_reasoner_endpoint(prompt: str, model: str = "openai/gpt-oss-20b:free"):
     """
     Genera respuestas usando el modelo Razonador GPT-OSS-20B.
     
@@ -107,6 +121,9 @@ async def chat_reasoner_endpoint(prompt: str):
         prompt (str): Texto de entrada para el modelo. Especialmente útil
                      para problemas matemáticos, razonamiento lógico, o
                      análisis complejos. No puede estar vacío.
+        model (str, optional): Identificador del modelo a utilizar.
+                     Por defecto: "openai/gpt-oss-20b:free"
+                     Permite usar modelos alternativos de razonamiento.
     
     Returns:
         dict: Objeto JSON con la estructura:
@@ -119,26 +136,37 @@ async def chat_reasoner_endpoint(prompt: str):
     
     Example:
         ```bash
+        # Modelo por defecto
         curl -X POST "http://localhost:8000/openrouter/chat/reasoner?prompt=Resuelve: 2+2*3"
+        
+        # Modelo alternativo
+        curl -X POST "http://localhost:8000/openrouter/chat/reasoner?prompt=Problema&model=openai/o1-mini"
         ```
         
         ```python
         import requests
+        # Modelo por defecto
         response = requests.post(
             "http://localhost:8000/openrouter/chat/reasoner",
             params={"prompt": "Si 2x + 3 = 11, ¿cuál es el valor de x?"}
+        )
+        # Modelo alternativo
+        response = requests.post(
+            "http://localhost:8000/openrouter/chat/reasoner",
+            params={"prompt": "Problema...", "model": "anthropic/claude-3-opus"}
         )
         print(response.json()["response"])
         ```
     
     Note:
-        - Modelo usado: openai/gpt-oss-20b:free
+        - Modelo por defecto: openai/gpt-oss-20b:free
         - Timeout: 30 segundos
         - Requiere OPENROUTER_API_KEY válida en variables de entorno
+        - Ver modelos disponibles: https://openrouter.ai/models
     """
-    logger.info(f"Endpoint /chat/reasoner llamado con prompt de longitud {len(prompt)}")
+    logger.info(f"Endpoint /chat/reasoner llamado con prompt de longitud {len(prompt)}, modelo: {model}")
     try:
-        response = client.chat_reasoner(prompt)
+        response = client.chat_reasoner(prompt, model=model)
         logger.info("Respuesta generada exitosamente en /chat/reasoner")
         return {"response": response}
     except ValueError as e:
@@ -150,7 +178,7 @@ async def chat_reasoner_endpoint(prompt: str):
 
 
 @router.post("/image/generate")
-async def generate_image_endpoint(prompt: str):
+async def generate_image_endpoint(prompt: str, model: str = "google/gemini-2.5-flash-image"):
     """
     Genera imágenes usando el modelo Gemini 2.5 Flash Image de Google.
     
@@ -162,6 +190,9 @@ async def generate_image_endpoint(prompt: str):
         prompt (str): Descripción detallada de la imagen a generar.
                      Cuanto más específico y descriptivo sea el prompt,
                      mejor será el resultado. No puede estar vacío.
+        model (str, optional): Identificador del modelo a utilizar.
+                     Por defecto: "google/gemini-2.5-flash-image"
+                     Permite usar modelos alternativos de generación de imagen.
     
     Returns:
         dict: Objeto JSON con la estructura:
@@ -175,29 +206,40 @@ async def generate_image_endpoint(prompt: str):
     
     Example:
         ```bash
+        # Modelo por defecto
         curl -X POST "http://localhost:8000/openrouter/image/generate?prompt=Un gato astronauta en la luna"
+        
+        # Modelo alternativo
+        curl -X POST "http://localhost:8000/openrouter/image/generate?prompt=Un gato&model=openai/dall-e-3"
         ```
         
         ```python
         import requests
+        # Modelo por defecto
         response = requests.post(
             "http://localhost:8000/openrouter/image/generate",
             params={"prompt": "Un paisaje futurista al atardecer con edificios flotantes"}
+        )
+        # Modelo alternativo
+        response = requests.post(
+            "http://localhost:8000/openrouter/image/generate",
+            params={"prompt": "Un robot", "model": "stability-ai/stable-diffusion-xl"}
         )
         print(response.json()["image_url"])
         # https://...
         ```
     
     Note:
-        - Modelo usado: google/gemini-2.5-flash-image
+        - Modelo por defecto: google/gemini-2.5-flash-image
         - Modalidades: image, text
         - Timeout: 30 segundos
         - Requiere OPENROUTER_API_KEY válida en variables de entorno
         - La URL de la imagen puede tener un tiempo de expiración
+        - Ver modelos disponibles: https://openrouter.ai/models?type=image
     """
-    logger.info(f"Endpoint /image/generate llamado con prompt de longitud {len(prompt)}")
+    logger.info(f"Endpoint /image/generate llamado con prompt de longitud {len(prompt)}, modelo: {model}")
     try:
-        image_url = client.generate_image(prompt)
+        image_url = client.generate_image(prompt, model=model)
         logger.info("Imagen generada exitosamente en /image/generate")
         return {"image_url": image_url}
     except ValueError as e:

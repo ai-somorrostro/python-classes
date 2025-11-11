@@ -222,10 +222,18 @@ class OpenRouterClient:
         logger.error(f"No se pudo extraer URL de imagen. Estructura: {type(content)}")
         raise ValueError("Respuesta sin URL de imagen válida")
 
-    def chat_llm(self, prompt: str) -> str:
+    def chat_llm(self, prompt: str, model: str = "google/gemini-2.0-flash-lite-001") -> str:
         """Genera una respuesta usando el modelo LLM de Google.
+        
         Args:
             prompt (str): Texto de entrada para el modelo.
+            model (str, optional): Identificador del modelo a utilizar.
+                Por defecto: "google/gemini-2.0-flash-lite-001"
+                Otros modelos disponibles en OpenRouter:
+                - "openai/gpt-4-turbo"
+                - "anthropic/claude-3-opus"
+                - "meta-llama/llama-3-70b"
+                Ver lista completa: https://openrouter.ai/models
             
         Returns:
             str: Respuesta generada por el modelo.
@@ -235,23 +243,33 @@ class OpenRouterClient:
             
         Example:
             >>> client = OpenRouterClient()
+            >>> # Usar modelo por defecto
             >>> response = client.chat_llm("Hola, ¿cómo estás?")
+            >>> # Usar modelo alternativo
+            >>> response = client.chat_llm("Hola", model="openai/gpt-4-turbo")
         """
         if not prompt or not prompt.strip():
             logger.warning("Intento de llamar chat_llm con prompt vacío")
             raise ValueError("El prompt no puede estar vacío")
         
-        model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
         logger.info(f"Llamando chat_llm con modelo {model}")
         
         response = self._make_request(model, messages)
         return self._extract_text_content(response)
     
-    def chat_reasoner(self, prompt: str) -> str:
-        """Genera una respuesta usando el modelo Razonador de Google.
+    def chat_reasoner(self, prompt: str, model: str = "openai/gpt-oss-20b:free") -> str:
+        """Genera una respuesta usando el modelo Razonador.
+        
         Args:
             prompt (str): Texto de entrada para el modelo.
+            model (str, optional): Identificador del modelo a utilizar.
+                Por defecto: "openai/gpt-oss-20b:free"
+                Modelos recomendados para razonamiento:
+                - "openai/o1-mini"
+                - "anthropic/claude-3-opus"
+                - "google/gemini-2.0-thinking-exp"
+                Ver lista completa: https://openrouter.ai/models
             
         Returns:
             str: Respuesta generada por el modelo.
@@ -261,39 +279,50 @@ class OpenRouterClient:
             
         Example:
             >>> client = OpenRouterClient()
-            >>> response = client.chat_reasoner("Resuelve este problema matemático...")
+            >>> # Usar modelo por defecto
+            >>> response = client.chat_reasoner("Resuelve: 2x + 3 = 11")
+            >>> # Usar modelo alternativo
+            >>> response = client.chat_reasoner("Problema matemático...", model="openai/o1-mini")
         """
         if not prompt or not prompt.strip():
             logger.warning("Intento de llamar chat_reasoner con prompt vacío")
             raise ValueError("El prompt no puede estar vacío")
         
-        model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
         logger.info(f"Llamando chat_reasoner con modelo {model}")
         
         response = self._make_request(model, messages)
         return self._extract_text_content(response)
     
-    def generate_image(self, prompt: str) -> str:
-        """Genera una respuesta usando el modelo de generacion de imagenes.
+    def generate_image(self, prompt: str, model: str = "google/gemini-2.5-flash-image") -> str:
+        """Genera una imagen usando el modelo de generación de imágenes.
+        
         Args:
-            prompt (str): Texto de entrada para el modelo.
-
+            prompt (str): Descripción detallada de la imagen a generar.
+            model (str, optional): Identificador del modelo a utilizar.
+                Por defecto: "google/gemini-2.5-flash-image"
+                Otros modelos de imagen disponibles:
+                - "stability-ai/stable-diffusion-xl"
+                - "openai/dall-e-3"
+                Ver lista completa: https://openrouter.ai/models?type=image
+        
         Returns:
             str: URL de la imagen generada por el modelo.
-
+        
         Raises: 
             ValueError: Si el prompt está vacío o la API devuelve error.
-
+        
         Example:
             >>> client = OpenRouterClient()
+            >>> # Usar modelo por defecto
             >>> image_url = client.generate_image("Un paisaje futurista al atardecer")
+            >>> # Usar modelo alternativo
+            >>> image_url = client.generate_image("Un gato", model="openai/dall-e-3")
         """
         if not prompt or not prompt.strip():
             logger.warning("Intento de llamar generate_image con prompt vacío")
             raise ValueError("El prompt no puede estar vacío")
         
-        model = "google/gemini-2.5-flash-image"
         messages = [{"role": "user", "content": prompt}]
         extra = {"modalities": ["image", "text"]}
         logger.info(f"Llamando generate_image con modelo {model}")
