@@ -27,8 +27,15 @@ docker-compose up --build
 - **Documentación Swagger**: Interfaz interactiva en `/docs`
 - **Documentación ReDoc**: Documentación alternativa en `/redoc`
 - **Dockerizado**: Fácil despliegue con Docker y Docker Compose
-- **Validación de Prompts**: Validación automática de entradas
-- **Manejo de Errores**: Gestión robusta de errores y excepciones
+- **Validación de Prompts**: Validación automática de entradas vacías
+- **Validación de API Key**: Formato correcto `sk-or-v1-...` al iniciar
+- **Manejo de Errores**: Gestión robusta con mensajes descriptivos
+- **Rate Limiting**: Manejo específico de límites (HTTP 429)
+- **Reintentos Automáticos**: 3 intentos con backoff exponencial
+- **Health Check Avanzado**: Verifica conectividad con OpenRouter
+- **Métricas de Uso**: Logging de tokens consumidos y costos
+- **Cache Opcional**: Cache LRU en memoria (desarrollo/testing)
+- **Modelos Configurables**: Parámetros opcionales para cambiar modelos
 
 ## 📁 Estructura del Proyecto
 
@@ -190,12 +197,79 @@ Genera imágenes usando el modelo de Gemini 2.5 Flash Image.
 }
 ```
 
+#### 4. Estadísticas de Cache
+**GET** `/openrouter/cache/stats`
+
+Obtiene estadísticas del cache en memoria.
+
+**Respuesta:**
+```json
+{
+  "enabled": true,
+  "size": 5,
+  "max_size": 100
+}
+```
+
+#### 5. Limpiar Cache
+**DELETE** `/openrouter/cache/clear`
+
+Limpia completamente el cache en memoria.
+
+**Respuesta:**
+```json
+{
+  "message": "Cache limpiado exitosamente",
+  "stats": {
+    "enabled": true,
+    "size": 0,
+    "max_size": 100
+  }
+}
+```
+
 ## 📚 Documentación Interactiva
 
 Una vez ejecutada la aplicación, accede a:
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
+
+## 🗂️ Cache (Opcional)
+
+El sistema incluye un cache LRU en memoria para evitar llamadas duplicadas a la API de OpenRouter.
+
+### Configuración
+
+Edita tu archivo `.env`:
+
+```env
+ENABLE_CACHE=true  # o false (default)
+```
+
+### Características del Cache
+
+- **Estrategia**: LRU (Least Recently Used)
+- **Límite**: 100 entradas máximo
+- **Almacenamiento**: En memoria (se pierde al reiniciar)
+- **Uso recomendado**: Solo para desarrollo/testing
+
+### Gestión del Cache
+
+```bash
+# Ver estadísticas
+curl http://localhost:8000/openrouter/cache/stats
+
+# Limpiar cache
+curl -X DELETE http://localhost:8000/openrouter/cache/clear
+```
+
+### ¿Cuándo usar cache?
+
+- ✅ **Desarrollo/Testing**: Para no consumir API calls innecesarias
+- ✅ **Demos**: Cuando se muestra el mismo contenido repetidamente
+- ❌ **Producción**: No recomendado (las respuestas deben ser frescas)
+- ❌ **Contenido dinámico**: Cuando se esperan respuestas diferentes
 
 ## 🧪 Ejemplos de Uso
 
