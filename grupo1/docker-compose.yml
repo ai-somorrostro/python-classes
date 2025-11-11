@@ -6,8 +6,5 @@ services:
     container_name: fastapi-app
     ports:
       - "8000:8000"
-    environment:
-      - ENV=dev
-      - API_KEY=tu_api_key_aqui
     volumes:
       - .:/app

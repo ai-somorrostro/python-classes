@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from services.openrouter_client import OpenRouterClient
+from src.services.openrouter_client import OpenRouterClient
 import os
 from dotenv import load_dotenv
 
