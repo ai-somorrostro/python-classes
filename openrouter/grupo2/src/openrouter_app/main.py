@@ -1,49 +1,95 @@
-import os
-import base64
+from fastapi import FastAPIimport os
+
+from .api import llm_apiimport base64
+
 import datetime
-import requests
-from modules.openrouter_client import OpenRouterClient
 
+# Crear la aplicación FastAPIimport requests
 
-def _images_dir() -> str:
-    base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-    images_dir = os.path.join(base_dir, "images")
-    os.makedirs(images_dir, exist_ok=True)
+app = FastAPI(from modules.openrouter_client import OpenRouterClient
+
+    title="OpenRouter API Gateway",
+
+    description="API Gateway para interactuar con modelos de OpenRouter",
+
+    version="6.0.0",def _images_dir() -> str:
+
+    docs_url="/docs",    base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+    redoc_url="/redoc"    images_dir = os.path.join(base_dir, "images")
+
+)    os.makedirs(images_dir, exist_ok=True)
+
     return images_dir
 
+# Registrar el router de la API
+
+app.include_router(llm_api.router)
 
 def _menu():
+
     print("\n=== Selecciona un modelo ===")
-    print("1) LLM normal")
-    print("2) Razonador")
-    print("3) Generación de imagen")
-    print("0) Salir")
-    return input("Opción: ").strip()
+
+@app.get("/")    print("1) LLM normal")
+
+async def root():    print("2) Razonador")
+
+    """    print("3) Generación de imagen")
+
+    Endpoint raíz de la API.    print("0) Salir")
+
+        return input("Opción: ").strip()
+
+    Returns:
+
+        dict: Mensaje de bienvenida y enlaces a la documentación.
+
+    """def _run_llm(client: OpenRouterClient):
+
+    return {    prompt = input("Ingresa tu prompt para LLM: ")
+
+        "message": "Bienvenido al API Gateway de OpenRouter",    try:
+
+        "version": "6.0.0",        llm_text = client.chat_llm(prompt)
+
+        "docs": "/docs",        print(f"\nRespuesta LLM:\n{llm_text}")
+
+        "redoc": "/redoc"    except ValueError as e:
+
+    }        print(f"Error LLM: {e}")
 
 
-def _run_llm(client: OpenRouterClient):
-    prompt = input("Ingresa tu prompt para LLM: ")
-    try:
-        llm_text = client.chat_llm(prompt)
-        print(f"\nRespuesta LLM:\n{llm_text}")
-    except ValueError as e:
-        print(f"Error LLM: {e}")
 
 
-def _run_reasoner(client: OpenRouterClient):
-    prompt = input("Ingresa tu prompt para Razonador: ")
-    try:
-        reason_text = client.chat_reasoner(prompt)
-        print(f"\nRespuesta Razonador:\n{reason_text}")
-    except ValueError as e:
-        print(f"Error Razonador: {e}")
 
+@app.get("/health")def _run_reasoner(client: OpenRouterClient):
+
+async def health_check():    prompt = input("Ingresa tu prompt para Razonador: ")
+
+    """    try:
+
+    Endpoint para verificar el estado de la API.        reason_text = client.chat_reasoner(prompt)
+
+            print(f"\nRespuesta Razonador:\n{reason_text}")
+
+    Returns:    except ValueError as e:
+
+        dict: Estado de la API.        print(f"Error Razonador: {e}")
+
+    """
+
+    return {"status": "healthy"}
 
 def _run_image(client: OpenRouterClient):
+
     prompt = input("Ingresa tu prompt para Imagen: ")
-    try:
-        image_url = client.generate_image(prompt)
-        ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+if __name__ == "__main__":    try:
+
+    import uvicorn        image_url = client.generate_image(prompt)
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)        ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
         out_dir = _images_dir()
         # Caso 1: data URL base64
         if isinstance(image_url, str) and image_url.startswith("data:image"):
