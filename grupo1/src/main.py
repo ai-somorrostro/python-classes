@@ -1,4 +1,4 @@
-from openrouter_app.modules.openrouter_client import OpenRouterClient
+from src.services.openrouter_client import OpenRouterClient
 from dotenv import load_dotenv
 import os
 import base64

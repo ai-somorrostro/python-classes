@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv() 
 
-
 class OpenRouterClient:
     def __init__(self,api_key: str):
         self.api_key = api_key
@@ -42,12 +41,6 @@ class OpenRouterClient:
             return f"Response processing error: {e}"
         except Exception as e:
             return f"Unexpected error: {e}"
-
-        if response.status_code == 200:
-            result = response.json()
-            return result["choices"][0]["message"]["content"]
-        else:
-            return f"Error: {response.status_code} - {response.text}"
 
     def llm(self, prompt: str) -> str:
         """
