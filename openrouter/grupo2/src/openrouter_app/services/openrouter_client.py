@@ -103,7 +103,7 @@ class OpenRouterClient:
         Obtén tu API key en: https://openrouter.ai/keys
     """
 
-    def __init__(self, api_key: Optional[str] = None, enable_cache: bool = False):
+    def __init__(self, api_key: Optional[str] = None, enable_cache: bool = False, cache_max_size: int = 100):
         if api_key is None:
             api_key = os.getenv('OPENROUTER_API_KEY')
         if not api_key:
@@ -123,10 +123,12 @@ class OpenRouterClient:
         
         # Cache simple en memoria (solo para desarrollo/testing)
         self.enable_cache = enable_cache
+        self.cache_max_size = cache_max_size
         self._cache: Dict[str, Dict] = {}
+        self._cache_order: List[str] = []  # Para implementar LRU (Least Recently Used)
         
         cache_status = "habilitada" if enable_cache else "deshabilitada"
-        logger.info(f"OpenRouterClient inicializado correctamente con API key válida (cache {cache_status})")
+        logger.info(f"OpenRouterClient inicializado correctamente con API key válida (cache {cache_status}, max: {cache_max_size})")
     
     @staticmethod
     def _validate_api_key_format(api_key: str) -> bool:
@@ -166,36 +168,62 @@ class OpenRouterClient:
     
     def _get_from_cache(self, cache_key: str) -> Optional[Dict]:
         """
-        Obtiene una respuesta del cache si existe.
+        Obtiene una respuesta del cache si existe (LRU).
         
         Args:
             cache_key (str): Clave del cache
             
         Returns:
             Optional[Dict]: Respuesta cacheada o None si no existe
+            
+        Note:
+            Mueve la clave al final de la lista (más recientemente usada)
         """
         if not self.enable_cache:
             return None
         
         cached_response = self._cache.get(cache_key)
         if cached_response:
+            # Mover al final (más reciente) para LRU
+            if cache_key in self._cache_order:
+                self._cache_order.remove(cache_key)
+                self._cache_order.append(cache_key)
             logger.info(f"Cache HIT: Usando respuesta cacheada para key {cache_key[:8]}...")
             return cached_response
         return None
     
     def _save_to_cache(self, cache_key: str, response: Dict) -> None:
         """
-        Guarda una respuesta en el cache.
+        Guarda una respuesta en el cache con límite LRU.
         
         Args:
             cache_key (str): Clave del cache
             response (Dict): Respuesta a guardar
+            
+        Note:
+            Si el cache está lleno, elimina la entrada menos recientemente usada (LRU)
         """
         if not self.enable_cache:
             return
         
+        # Si ya existe, actualizarla y moverla al final
+        if cache_key in self._cache:
+            self._cache[cache_key] = response
+            self._cache_order.remove(cache_key)
+            self._cache_order.append(cache_key)
+            logger.debug(f"Cache UPDATE: Respuesta actualizada con key {cache_key[:8]}...")
+            return
+        
+        # Si el cache está lleno, eliminar la entrada más antigua (LRU)
+        if len(self._cache) >= self.cache_max_size:
+            oldest_key = self._cache_order.pop(0)
+            del self._cache[oldest_key]
+            logger.debug(f"Cache EVICT: Eliminada entrada antigua {oldest_key[:8]}... (límite: {self.cache_max_size})")
+        
+        # Agregar nueva entrada
         self._cache[cache_key] = response
-        logger.debug(f"Cache SAVE: Respuesta guardada con key {cache_key[:8]}... (total: {len(self._cache)} entradas)")
+        self._cache_order.append(cache_key)
+        logger.debug(f"Cache SAVE: Respuesta guardada con key {cache_key[:8]}... (total: {len(self._cache)}/{self.cache_max_size})")
     
     def clear_cache(self) -> None:
         """
@@ -204,8 +232,26 @@ class OpenRouterClient:
         Note:
             Útil para testing o cuando se necesita forzar nuevas requests.
         """
+        entries_count = len(self._cache)
         self._cache.clear()
-        logger.info("Cache limpiado completamente")
+        self._cache_order.clear()
+        logger.info(f"Cache limpiado completamente ({entries_count} entradas eliminadas)")
+    
+    def get_cache_stats(self) -> Dict[str, int]:
+        """
+        Obtiene estadísticas del cache.
+        
+        Returns:
+            Dict[str, int]: Diccionario con estadísticas:
+                - size: Número actual de entradas
+                - max_size: Tamaño máximo configurado
+                - enabled: Si el cache está habilitado
+        """
+        return {
+            "enabled": self.enable_cache,
+            "size": len(self._cache),
+            "max_size": self.cache_max_size
+        }
     
     def _make_request(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None, max_retries: int = 3) -> Dict:
 
