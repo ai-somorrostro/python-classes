@@ -1,6 +1,9 @@
 
 services:
   fastapi:
-    build: .
+    container_name: python_api_openrouter
+    build:
+      context: .
     ports:
       - "8000:8000"
+    working_dir: /src
