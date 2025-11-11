@@ -24,7 +24,7 @@ class OpenRouterClient:
                 }
             ]
         }
-        response = requests.post(self.base_url, headers=self.headers, json=data)
+        response = requests.post(self.base_url, headers=self.headers, json=data, timeout=30)
 
         if response.status_code == 200:
             result = response.json()
@@ -42,7 +42,7 @@ class OpenRouterClient:
             "messages": [{"role": "user", "content": prompt}]
         }
 
-        response = requests.post(self.base_url, headers=self.headers, json=payload)
+        response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
 
         if response.status_code != 200:
             raise Exception(f"Error {response.status_code}: {response.text}")
@@ -58,7 +58,7 @@ class OpenRouterClient:
                 {"role": "user", "content": prompt}
             ]
         }
-        response = requests.post(self.base_url, headers=self.headers, json=data)
+        response = requests.post(self.base_url, headers=self.headers, json=data, timeout=30)
 
         if response.status_code == 200:
             result = response.json()
