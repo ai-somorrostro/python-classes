@@ -178,6 +178,9 @@ class OpenRouterClient:
                     logger.error(f"Error de API OpenRouter: {error_msg}")
                     raise ValueError(f"Error de API: {error_msg}")
                 
+                # Logging de métricas de uso (tokens y costos)
+                self._log_usage_metrics(data, model)
+                
                 logger.debug(f"Respuesta exitosa de OpenRouter para modelo {model}")
                 return data
                 
@@ -210,6 +213,44 @@ class OpenRouterClient:
                     continue
                 logger.error(f"Error en request a OpenRouter después de {max_retries} intentos: {str(e)}")
                 raise ValueError(f"Error en request después de {max_retries} intentos: {e}")
+    
+    def _log_usage_metrics(self, response: Dict, model: str) -> None:
+        """
+        Registra métricas de uso de tokens y costos de la respuesta.
+        
+        OpenRouter devuelve información sobre tokens consumidos y costos
+        estimados en el campo 'usage' de la respuesta. Este método extrae
+        y registra esa información para monitoreo y análisis.
+        
+        Args:
+            response (Dict): Respuesta completa de OpenRouter API
+            model (str): Nombre del modelo utilizado
+            
+        Note:
+            Las métricas incluyen:
+            - prompt_tokens: Tokens del prompt enviado
+            - completion_tokens: Tokens generados en la respuesta
+            - total_tokens: Total de tokens consumidos
+            - total_cost: Costo estimado en USD (si está disponible)
+        """
+        usage = response.get("usage", {})
+        if not usage:
+            return
+        
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        total_tokens = usage.get("total_tokens", 0)
+        
+        # OpenRouter puede incluir información de costos
+        total_cost = usage.get("total_cost", 0)
+        
+        logger.info(
+            f"Métricas de uso - Modelo: {model} | "
+            f"Tokens prompt: {prompt_tokens} | "
+            f"Tokens completion: {completion_tokens} | "
+            f"Total tokens: {total_tokens} | "
+            f"Costo estimado: ${total_cost:.6f} USD"
+        )
     
     def _extract_text_content(self, response: Dict) -> str:
         """Extrae texto de la respuesta del API de forma robusta.
