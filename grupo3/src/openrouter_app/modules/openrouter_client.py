@@ -1,4 +1,5 @@
 import requests
+
 class OpenRouterClient:
 
     def __init__(self, api_key: str):
@@ -13,14 +14,20 @@ class OpenRouterClient:
     def is_configured(self) -> bool:
         """Verifica que haya una API key configurada."""
         return bool(self.api_key)
-    # Modelo de generación de imagenes
-    def generate_image(self,prompt):
-        r=requests.post("https://openrouter.ai/api/v1/chat/completions",
-            headers=self.headers,
-            json={"model":"openai/gpt-5-image-mini","messages":[{"role":"user","content":prompt}]})
-        if r.status_code!=200:raise RuntimeError(f"Error {r.status_code}: {r.text}")
-        print("DEBUG Response:",r.text)
-        return r.json()["choices"][0]["message"]["content"]
+
+    # Modelo de generación de imágenes
+    def generate_image(self, prompt: str) -> str:
+        """Genera una imagen usando el modelo openai/gpt-5-image-mini."""
+        model = "openai/gpt-5-image-mini"
+        messages = [{"role": "user", "content": prompt}]
+        
+        try:
+            data = self._make_request(model, messages)
+            return data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError):
+            return "Error: no se pudo extraer la respuesta del modelo."
+        except requests.exceptions.RequestException as e:
+            return f"Error en la solicitud: {e}"
 
     def _make_request(self, model: str, messages: list) -> dict:
         """Método interno para enviar una solicitud POST a la API."""
@@ -33,6 +40,7 @@ class OpenRouterClient:
         response.raise_for_status()  # lanza error si hay fallo HTTP
 
         return response.json()
+
     # Modelo razonador
     def ask_reasoner(self, prompt: str) -> str:
         """
@@ -51,7 +59,8 @@ class OpenRouterClient:
             content = f"Error en la solicitud: {e}"
 
         return content
-    #Modelo de LLM-Normal
+
+    # Modelo LLM-Normal
     def call_llm(self, prompt: str) -> str:
         model = "google/gemini-2.0-flash-exp:free"
         messages = [{"role": "user", "content": prompt}]
