@@ -1,3 +1,41 @@
+"""
+Cliente OpenRouter - Comunicación con API de OpenRouter.
+
+Este módulo proporciona un cliente Python para interactuar con la API
+de OpenRouter, que da acceso a múltiples modelos de lenguaje e imagen
+de diferentes proveedores.
+
+El cliente maneja:
+    - Autenticación con API key
+    - Construcción y envío de requests HTTP
+    - Parseo robusto de respuestas en múltiples formatos
+    - Logging detallado para debugging
+    - Manejo de errores por tipo (timeout, HTTP, network)
+
+Modelos soportados:
+    - Chat LLM: google/gemini-2.0-flash-lite-001
+    - Razonador: openai/gpt-oss-20b:free
+    - Imágenes: google/gemini-2.5-flash-image
+
+Classes:
+    OpenRouterClient: Cliente principal para interactuar con OpenRouter API
+
+Example:
+    ```python
+    from openrouter_client import OpenRouterClient
+    
+    # Inicializar cliente (usa OPENROUTER_API_KEY del entorno)
+    client = OpenRouterClient()
+    
+    # O con API key explícita
+    client = OpenRouterClient(api_key="sk-or-v1-...")
+    
+    # Usar el cliente
+    response = client.chat_llm("Hola, ¿cómo estás?")
+    print(response)
+    ```
+"""
+
 import os
 import logging
 from typing import Optional, Dict, List
@@ -15,13 +53,52 @@ logging.basicConfig(
 
 
 class OpenRouterClient:
-    """Cliente para interactuar con la API de OpenRouter.
-    Proporciona métodos para generar respuestas usando diferentes modelos de lenguaje y generación de imágenes.
+    """
+    Cliente para interactuar con la API de OpenRouter.
+    
+    Esta clase encapsula toda la lógica de comunicación con OpenRouter API,
+    proporcionando métodos simples para generar respuestas de texto e imágenes
+    usando diferentes modelos de IA.
+    
+    El cliente maneja automáticamente:
+        - Autenticación con API key
+        - Construcción de payloads JSON
+        - Envío de requests POST con headers apropiados
+        - Parseo robusto de respuestas (soporta múltiples formatos)
+        - Timeouts configurados (30 segundos)
+        - Logging detallado de operaciones
+        - Manejo específico de errores por tipo
+    
+    Attributes:
+        base_url (str): URL base de la API de OpenRouter
+        headers (dict): Headers HTTP con autenticación y content-type
+    
     Args:
-        api_key (Optional[str]): Clave API para autenticar las solicitudes. Si no se
-        proporciona, se buscará en la variable de entorno 'OPENROUTER_API_KEY'.
+        api_key (Optional[str]): Clave API para autenticar las solicitudes.
+            Si es None, se buscará en la variable de entorno 'OPENROUTER_API_KEY'.
+            Debe tener formato: sk-or-v1-...
+    
     Raises:
-        ValueError: Si no se proporciona una clave API válida.
+        ValueError: Si no se proporciona ni encuentra una API key válida.
+    
+    Example:
+        ```python
+        # Usando variable de entorno
+        client = OpenRouterClient()
+        
+        # Usando API key explícita
+        client = OpenRouterClient(api_key="sk-or-v1-...")
+        
+        # Generar texto
+        response = client.chat_llm("Explica qué es Python")
+        
+        # Generar imagen
+        image_url = client.generate_image("Un gato espacial")
+        ```
+    
+    Note:
+        La API key debe tener permisos para los modelos que se van a usar.
+        Obtén tu API key en: https://openrouter.ai/keys
     """
 
     def __init__(self, api_key: Optional[str] = None):

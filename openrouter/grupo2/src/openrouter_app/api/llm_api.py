@@ -1,3 +1,26 @@
+"""
+Módulo de API REST para OpenRouter.
+
+Este módulo define los endpoints HTTP que exponen la funcionalidad
+del cliente OpenRouter. Todos los endpoints están bajo el prefijo
+/openrouter y están documentados en Swagger UI.
+
+Routers:
+    - POST /openrouter/chat/llm: Chat con modelo LLM de Google Gemini
+    - POST /openrouter/chat/reasoner: Chat con modelo razonador GPT-OSS
+    - POST /openrouter/image/generate: Generación de imágenes con Gemini
+
+Cada endpoint:
+    - Acepta parámetros como query strings (sin Pydantic)
+    - Valida entrada y maneja errores apropiadamente
+    - Retorna JSON con la respuesta o error detallado
+    - Registra logs para debugging y monitoreo
+
+Attributes:
+    router (APIRouter): Router de FastAPI con endpoints de OpenRouter
+    client (OpenRouterClient): Instancia del cliente para llamar a la API
+"""
+
 from fastapi import APIRouter, HTTPException
 import logging
 from ..services.openrouter_client import OpenRouterClient
@@ -19,16 +42,44 @@ client = OpenRouterClient()
 @router.post("/chat/llm")
 async def chat_llm_endpoint(prompt: str):
     """
-    Endpoint para generar respuestas usando el modelo LLM de Google.
+    Genera respuestas usando el modelo LLM de Google Gemini 2.0 Flash Lite.
+    
+    Este endpoint procesa texto natural y genera respuestas conversacionales
+    usando el modelo Gemini 2.0 Flash Lite de Google a través de OpenRouter.
+    Es ideal para conversaciones generales, preguntas y respuestas.
     
     Args:
-        prompt (str): Texto de entrada para el modelo.
+        prompt (str): Texto de entrada para el modelo. Puede ser una pregunta,
+                     instrucción o cualquier texto que requiera procesamiento
+                     por el LLM. No puede estar vacío.
     
     Returns:
-        dict: Respuesta del modelo con el contenido generado.
+        dict: Objeto JSON con la estructura:
+            - response (str): Texto generado por el modelo
     
     Raises:
-        HTTPException: Si hay un error en la solicitud o validación.
+        HTTPException: 
+            - 400: Si el prompt está vacío o es inválido
+            - 500: Si hay un error interno al comunicarse con OpenRouter
+    
+    Example:
+        ```bash
+        curl -X POST "http://localhost:8000/openrouter/chat/llm?prompt=Explica qué es FastAPI"
+        ```
+        
+        ```python
+        import requests
+        response = requests.post(
+            "http://localhost:8000/openrouter/chat/llm",
+            params={"prompt": "¿Qué es Python?"}
+        )
+        print(response.json()["response"])
+        ```
+    
+    Note:
+        - Modelo usado: google/gemini-2.0-flash-lite-001
+        - Timeout: 30 segundos
+        - Requiere OPENROUTER_API_KEY válida en variables de entorno
     """
     logger.info(f"Endpoint /chat/llm llamado con prompt de longitud {len(prompt)}")
     try:
@@ -46,16 +97,44 @@ async def chat_llm_endpoint(prompt: str):
 @router.post("/chat/reasoner")
 async def chat_reasoner_endpoint(prompt: str):
     """
-    Endpoint para generar respuestas usando el modelo Razonador.
+    Genera respuestas usando el modelo Razonador GPT-OSS-20B.
+    
+    Este endpoint está optimizado para razonamiento lógico, resolución
+    de problemas matemáticos y tareas que requieren pensamiento analítico.
+    Usa el modelo GPT-OSS-20B a través de OpenRouter.
     
     Args:
-        prompt (str): Texto de entrada para el modelo.
+        prompt (str): Texto de entrada para el modelo. Especialmente útil
+                     para problemas matemáticos, razonamiento lógico, o
+                     análisis complejos. No puede estar vacío.
     
     Returns:
-        dict: Respuesta del modelo con el contenido generado.
+        dict: Objeto JSON con la estructura:
+            - response (str): Texto generado por el modelo razonador
     
     Raises:
-        HTTPException: Si hay un error en la solicitud o validación.
+        HTTPException:
+            - 400: Si el prompt está vacío o es inválido
+            - 500: Si hay un error interno al comunicarse con OpenRouter
+    
+    Example:
+        ```bash
+        curl -X POST "http://localhost:8000/openrouter/chat/reasoner?prompt=Resuelve: 2+2*3"
+        ```
+        
+        ```python
+        import requests
+        response = requests.post(
+            "http://localhost:8000/openrouter/chat/reasoner",
+            params={"prompt": "Si 2x + 3 = 11, ¿cuál es el valor de x?"}
+        )
+        print(response.json()["response"])
+        ```
+    
+    Note:
+        - Modelo usado: openai/gpt-oss-20b:free
+        - Timeout: 30 segundos
+        - Requiere OPENROUTER_API_KEY válida en variables de entorno
     """
     logger.info(f"Endpoint /chat/reasoner llamado con prompt de longitud {len(prompt)}")
     try:
@@ -73,16 +152,48 @@ async def chat_reasoner_endpoint(prompt: str):
 @router.post("/image/generate")
 async def generate_image_endpoint(prompt: str):
     """
-    Endpoint para generar imágenes usando el modelo de generación de imágenes.
+    Genera imágenes usando el modelo Gemini 2.5 Flash Image de Google.
+    
+    Este endpoint convierte descripciones de texto en imágenes usando
+    el modelo de generación de imágenes Gemini 2.5 Flash Image a través
+    de OpenRouter. Retorna una URL de la imagen generada.
     
     Args:
-        prompt (str): Texto de entrada para el modelo.
+        prompt (str): Descripción detallada de la imagen a generar.
+                     Cuanto más específico y descriptivo sea el prompt,
+                     mejor será el resultado. No puede estar vacío.
     
     Returns:
-        dict: URL de la imagen generada.
+        dict: Objeto JSON con la estructura:
+            - image_url (str): URL completa de la imagen generada
     
     Raises:
-        HTTPException: Si hay un error en la solicitud o validación.
+        HTTPException:
+            - 400: Si el prompt está vacío o es inválido
+            - 500: Si hay un error interno al comunicarse con OpenRouter
+                   o si la respuesta no contiene una URL válida
+    
+    Example:
+        ```bash
+        curl -X POST "http://localhost:8000/openrouter/image/generate?prompt=Un gato astronauta en la luna"
+        ```
+        
+        ```python
+        import requests
+        response = requests.post(
+            "http://localhost:8000/openrouter/image/generate",
+            params={"prompt": "Un paisaje futurista al atardecer con edificios flotantes"}
+        )
+        print(response.json()["image_url"])
+        # https://...
+        ```
+    
+    Note:
+        - Modelo usado: google/gemini-2.5-flash-image
+        - Modalidades: image, text
+        - Timeout: 30 segundos
+        - Requiere OPENROUTER_API_KEY válida en variables de entorno
+        - La URL de la imagen puede tener un tiempo de expiración
     """
     logger.info(f"Endpoint /image/generate llamado con prompt de longitud {len(prompt)}")
     try:
