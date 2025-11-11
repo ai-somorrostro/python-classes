@@ -19,11 +19,11 @@ if __name__ == "__main__":
     user_prompt = input("Introduce el prompt para el razonador: ")
     system_prompt = "Eres un experto explicando conceptos complejos de manera simple."
     
-    respuesta = client.razonador(user_prompt,system_prompt)
+    respuesta = client.reasoner(user_prompt,system_prompt)
     print("Respuesta del razonador:", respuesta)
 
     prompt=input("Escribe tu prompt para el LLM: ")
-    response = client.LLM(prompt)
+    response = client.llm(prompt)
     print("Respuesta del modelo LLM:")
     print(response)
 

@@ -9,7 +9,7 @@ class OpenRouterClient:
             "Content-Type": "application/json"
         }
         
-    def razonador(self,user_message, system_prompt):
+    def reasoner(self,user_message, system_prompt):
         """Make a request with a system prompt to define AI behavior"""
         data = {
             "model": "openai/gpt-oss-20b:free",
@@ -32,9 +32,9 @@ class OpenRouterClient:
         else:
             return f"Error: {response.status_code} - {response.text}"
 
-    def LLM(self, prompt: str) -> str:
+    def llm(self, prompt: str) -> str:
         """
-        EnvÃ­a un prompt al modelo google/gemini-2.0-flash-exp:free
+        Envi­a un prompt al modelo google/gemini-2.0-flash-exp:free
         y devuelve directamente la respuesta.
         """
         payload = {
@@ -51,7 +51,7 @@ class OpenRouterClient:
         return data["choices"][0]["message"]["content"]
     
     def generate_image(self, prompt: str):
-        """Método para generar una imagen usando el modelo openai/gpt-5-image-mini"""
+        """Metodo para generar una imagen usando el modelo openai/gpt-5-image-mini"""
         data = {
             "model": "openai/gpt-5-image-mini",
             "messages": [
