@@ -8,13 +8,17 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Instalar dependencias
-RUN pip install --no-cache-dir -r requirements.txt
+# Instalar dependencias del sistema necesarias para healthcheck (curl)
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends curl \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& pip install --no-cache-dir -r requirements.txt
 
 # Copiar el código de la aplicación
 COPY openrouter/grupo2/src/openrouter_app /app/openrouter_app
 
-# Copiar el archivo .env (si existe)
-COPY openrouter/grupo2/.env /app/.env
+# Variables de entorno se inyectan via docker-compose.yml o --env-file
+# No copiar .env al contenedor (secretos deben pasar por runtime)
 
 # Exponer el puerto 8000
 EXPOSE 8000

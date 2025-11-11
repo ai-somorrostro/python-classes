@@ -57,6 +57,65 @@ class OpenRouterClient:
         except requests.exceptions.RequestException as e:
             raise ValueError(f"Error en request: {e}")
     
+    def _extract_text_content(self, response: Dict) -> str:
+        """Extrae texto de la respuesta del API de forma robusta.
+        Soporta tanto contenido como string (legacy) como lista de partes (OpenRouter moderno).
+        """
+        if "choices" not in response or not response["choices"]:
+            raise ValueError("Respuesta sin choices válidos")
+        choice = response["choices"][0]
+        message = choice.get("message") or {}
+        content = message.get("content")
+
+        # Caso 1: contenido string
+        if isinstance(content, str) and content.strip():
+            return content
+
+        # Caso 2: contenido como lista de partes [{type: 'text'|'output_image'|...}]
+        if isinstance(content, list):
+            texts = []
+            for part in content:
+                # Algunos esquemas usan {'type': 'text', 'text': '...'}
+                if isinstance(part, dict) and part.get("type") == "text" and part.get("text"):
+                    texts.append(part["text"])
+                # Otros esquemas devuelven directamente {'content': '...'}
+                elif isinstance(part, dict) and part.get("content"):
+                    texts.append(str(part["content"]))
+                elif isinstance(part, str):
+                    texts.append(part)
+            if texts:
+                return "\n".join(texts)
+
+        raise ValueError("Respuesta sin mensaje o contenido de texto válido")
+
+    def _extract_image_url(self, response: Dict) -> str:
+        """Extrae una URL de imagen de la respuesta del API de forma robusta."""
+        if "choices" not in response or not response["choices"]:
+            raise ValueError("Respuesta sin choices válidos")
+        choice = response["choices"][0]
+        message = choice.get("message") or {}
+
+        # Caso moderno: message.content es lista con parte tipo output_image
+        content = message.get("content")
+        if isinstance(content, list):
+            for part in content:
+                if isinstance(part, dict) and part.get("type") in {"image", "output_image"}:
+                    # OpenRouter retorna {'type': 'output_image', 'image_url': {'url': '...'}}
+                    image_url = part.get("image_url") or {}
+                    if isinstance(image_url, dict) and image_url.get("url"):
+                        return image_url["url"]
+
+        # Caso legacy asumido en implementación anterior
+        images = message.get("images")
+        if isinstance(images, list) and images:
+            first = images[0]
+            if isinstance(first, dict):
+                url_dict = first.get("image_url")
+                if isinstance(url_dict, dict) and url_dict.get("url"):
+                    return url_dict["url"]
+
+        raise ValueError("Respuesta sin URL de imagen válida")
+
     def chat_llm(self, prompt: str) -> str:
         """Genera una respuesta usando el modelo LLM de Google.
         Args:
@@ -77,11 +136,7 @@ class OpenRouterClient:
         model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
-        if "choices" not in response or not response["choices"]:
-            raise ValueError("Respuesta sin choices válidos")
-        if "message" not in response["choices"][0] or "content" not in response["choices"][0]["message"]:
-            raise ValueError("Respuesta sin mensaje o contenido válido")
-        return response["choices"][0]["message"]["content"]
+        return self._extract_text_content(response)
     
     def chat_reasoner(self, prompt: str) -> str:
         """Genera una respuesta usando el modelo Razonador de Google.
@@ -103,11 +158,7 @@ class OpenRouterClient:
         model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
-        if "choices" not in response or not response["choices"]:
-            raise ValueError("Respuesta sin choices válidos")
-        if "message" not in response["choices"][0] or "content" not in response["choices"][0]["message"]:
-            raise ValueError("Respuesta sin mensaje o contenido válido")
-        return response["choices"][0]["message"]["content"]
+        return self._extract_text_content(response)
     
     def generate_image(self, prompt: str) -> str:
         """Genera una respuesta usando el modelo de generacion de imagenes.
@@ -130,11 +181,4 @@ class OpenRouterClient:
         messages = [{"role": "user", "content": prompt}]
         extra = {"modalities": ["image", "text"]}
         data = self._make_request(model, messages, extra)
-        if "choices" not in data or not data["choices"]:
-            raise ValueError("Respuesta sin choices válidos")
-        if "message" not in data["choices"][0] or "images" not in data["choices"][0]["message"]:
-            raise ValueError("Respuesta sin mensaje o imágenes válidas")
-        images = data["choices"][0]["message"]["images"]
-        if not images or "image_url" not in images[0] or "url" not in images[0]["image_url"]:
-            raise ValueError("Respuesta sin URL de imagen válida")
-        return images[0]["image_url"]["url"]
+        return self._extract_image_url(data)
