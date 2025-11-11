@@ -75,6 +75,10 @@ class OpenRouterClient:
         model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
+        if "choices" not in response or not response["choices"]:
+            raise ValueError("Respuesta sin choices válidos")
+        if "message" not in response["choices"][0] or "content" not in response["choices"][0]["message"]:
+            raise ValueError("Respuesta sin mensaje o contenido válido")
         return response["choices"][0]["message"]["content"]
     
     def chat_reasoner(self, prompt: str) -> str:
@@ -95,6 +99,10 @@ class OpenRouterClient:
         model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
+        if "choices" not in response or not response["choices"]:
+            raise ValueError("Respuesta sin choices válidos")
+        if "message" not in response["choices"][0] or "content" not in response["choices"][0]["message"]:
+            raise ValueError("Respuesta sin mensaje o contenido válido")
         return response["choices"][0]["message"]["content"]
     
     def generate_image(self, prompt: str) -> str:
@@ -116,4 +124,11 @@ class OpenRouterClient:
         messages = [{"role": "user", "content": prompt}]
         extra = {"modalities": ["image", "text"]}
         data = self._make_request(model, messages, extra)
-        return data["choices"][0]["message"]["images"][0]["image_url"]["url"]
+        if "choices" not in data or not data["choices"]:
+            raise ValueError("Respuesta sin choices válidos")
+        if "message" not in data["choices"][0] or "images" not in data["choices"][0]["message"]:
+            raise ValueError("Respuesta sin mensaje o imágenes válidas")
+        images = data["choices"][0]["message"]["images"]
+        if not images or "image_url" not in images[0] or "url" not in images[0]["image_url"]:
+            raise ValueError("Respuesta sin URL de imagen válida")
+        return images[0]["image_url"]["url"]
