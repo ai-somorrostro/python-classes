@@ -183,7 +183,21 @@ class llm_api:
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
         
-       
+        @self.app.get("/images/{filename}")
+        async def get_image(filename: str):
+            """
+            Obtiene una imagen guardada localmente
+            
+            Args:
+                filename: Nombre del archivo de imagen
+            
+            Returns:
+                Archivo de imagen
+            """
+            filepath = os.path.join('images', filename)
+            if not os.path.exists(filepath):
+                raise HTTPException(status_code=404, detail="Imagen no encontrada")
+            return FileResponse(filepath)
     
     def run(self, host: str = "0.0.0.0", port: int = 8001, reload: bool = False):
         """
