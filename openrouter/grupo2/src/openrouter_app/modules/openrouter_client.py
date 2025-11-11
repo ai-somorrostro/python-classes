@@ -7,7 +7,14 @@ load_dotenv()
 
 
 class OpenRouterClient:
-    """Cliente OpenRouter con extracción de respuestas para LLM, razonador e imagen."""
+    """Cliente para interactuar con la API de OpenRouter.
+    Proporciona métodos para generar respuestas usando diferentes modelos de lenguaje y generación de imágenes.
+    Args:
+        api_key (Optional[str]): Clave API para autenticar las solicitudes. Si no se
+        proporciona, se buscará en la variable de entorno 'OPENROUTER_API_KEY'.
+    Raises:
+        ValueError: Si no se proporciona una clave API válida.
+    """
 
     def __init__(self, api_key: Optional[str] = None):
         if api_key is None:
@@ -22,6 +29,17 @@ class OpenRouterClient:
         }
     
     def _make_request(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None) -> Dict:
+
+        """Realiza una solicitud a la API de OpenRouter.
+        Args:
+            model (str): Nombre del modelo a utilizar.
+            messages (List[Dict]): Lista de mensajes para el modelo.
+            extra_params (Optional[Dict]): Parámetros adicionales para la solicitud.
+        Returns:
+            Dict: Respuesta de la API.
+        Raises:
+            ValueError: Si la API retorna un error o la solicitud falla.
+        """
         payload: Dict = {
             "model": model,
             "messages": messages,
@@ -40,27 +58,60 @@ class OpenRouterClient:
             raise ValueError(f"Error en request: {e}")
     
     def chat_llm(self, prompt: str) -> str:
-        """Devuelve solo el texto del primer choice."""
-        if not prompt or not prompt.strip():
-            raise ValueError("El prompt no puede estar vacío")
+        """Genera una respuesta usando el modelo LLM de Google.
+        Args:
+            prompt (str): Texto de entrada para el modelo.
+            
+        Returns:
+            str: Respuesta generada por el modelo.
+            
+        Raises:
+            ValueError: Si el prompt está vacío o la API retorna error.
+            
+        Example:
+            >>> client = OpenRouterClient()
+            >>> response = client.chat_llm("Hola, ¿cómo estás?")
+        """
         model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
         return response["choices"][0]["message"]["content"]
     
     def chat_reasoner(self, prompt: str) -> str:
-        """Devuelve solo el texto del razonador."""
-        if not prompt or not prompt.strip():
-            raise ValueError("El prompt no puede estar vacío")
+        """Genera una respuesta usando el modelo Razonador de Google.
+        Args:
+            prompt (str): Texto de entrada para el modelo.
+            
+        Returns:
+            str: Respuesta generada por el modelo.
+            
+        Raises:
+            ValueError: Si el prompt está vacío o la API devuelve error.
+            
+        Example:
+            >>> client = OpenRouterClient()
+            >>> response = client.chat_reasoner("Resuelve este problema matemático...")
+        """
         model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
         return response["choices"][0]["message"]["content"]
     
     def generate_image(self, prompt: str) -> str:
-        """Devuelve la URL (o data URL) de la primera imagen generada."""
-        if not prompt or not prompt.strip():
-            raise ValueError("El prompt no puede estar vacío")
+        """Genera una respuesta usando el modelo de generacion de imagenes.
+        Args:
+            prompt (str): Texto de entrada para el modelo.
+
+        Returns:
+            str: URL de la imagen generada por el modelo.
+
+        Raises: 
+            ValueError: Si el prompt está vacío o la API devuelve error.
+
+        Example:
+            >>> client = OpenRouterClient()
+            >>> image_url = client.generate_image("Un paisaje futurista al atardecer")
+        """
         model = "google/gemini-2.5-flash-image"
         messages = [{"role": "user", "content": prompt}]
         extra = {"modalities": ["image", "text"]}
