@@ -1,7 +1,7 @@
 import requests
-from PIL import Image
 import base64
-class Op_client:
+
+class OpR_client:
     """Clase cliente para interactuar con la API de OpenRouter."""
 
     def __init__(self, api_key, api_key_image):
@@ -20,9 +20,9 @@ class Op_client:
         """Genera y envía una solicitud POST a la API de OpenRouter."""
         
         if opcion == 1:
-            response = requests.post(self.base_url, headers=self.headers, json=data)
+            response = requests.post(self.base_url, headers=self.headers, json=data, timeout=10)
         else:
-            response = requests.post(self.base_url, headers=self.headers_image, json=data)
+            response = requests.post(self.base_url, headers=self.headers_image, json=data, timeout=20)
 
         if response.status_code == 200:
             result = response.json()
@@ -30,10 +30,22 @@ class Op_client:
         else:
             return f"Error: {response.status_code} - {response.text}"
 
-    def llamada_LLM_normal(self, prompt):
-        """Envía una solicitud de texto básica al modelo Gemini 2.0 de OpenRouter."""
+    def llamada_LLM_normal(self, prompt: str, modelo: str) -> str:
+        """
+    Envía una solicitud de texto básica al modelo Gemini 2.0 de OpenRouter.
+    
+    Args:
+        prompt (str): Texto de entrada para el modelo.
+        modelo (str): Nombre del modelo a utilizar.
+        
+    Returns:
+        str: Respuesta generada por el modelo.
+        
+    Raises:
+        ValueError: Si hay error en la API o prompt vacío.
+    """
         data = {
-            "model": "minimax/minimax-m2:free",
+            "model": modelo,
             "messages": [
                 {
                     "role": "user",
@@ -43,10 +55,22 @@ class Op_client:
         }
         return self.__generar_requests(data, 1)["content"]
 
-    def llamada_modelo_razonador(self, prompt):
-        """Envía una solicitud al modelo razonador gpt-oss-20b de OpenRouter."""
+    def llamada_modelo_razonador(self, prompt: str, modelo: str) -> str:
+        """
+    Envía una solicitud de texto básica al modelo Gemini 2.0 de OpenRouter.
+    
+    Args:
+        prompt (str): Texto de entrada para el modelo.
+        modelo (str): Nombre del modelo a utilizar.
+        
+    Returns:
+        str: Respuesta generada por el modelo.
+        
+    Raises:
+        ValueError: Si hay error en la API o prompt vacío.
+    """
         data = {
-        "model": "openai/gpt-oss-20b:free",
+        "model": modelo,
         "messages": [
             {"role": "user", 
              "content": prompt}
@@ -55,11 +79,22 @@ class Op_client:
         return self.__generar_requests(data, 1)["content"]
 
 
-    def llamada_img_gen(self, prompt):
-        """Envía un prompt al modelo de generación de imágenes y devuelve la URL resultante.
-        Retorna un string con la URL si todo va bien, o lanza una excepción con detalles en caso contrario."""
+    def llamada_img_gen(self, prompt: str, modelo: str) -> str:
+        """
+    Envía una solicitud de texto básica al modelo Gemini 2.0 de OpenRouter.
+    
+    Args:
+        prompt (str): Texto de entrada para el modelo.
+        modelo (str): Nombre del modelo a utilizar.
+        
+    Returns:
+        str: Respuesta generada por el modelo.
+        
+    Raises:
+        ValueError: Si hay error en la API o prompt vacío.
+    """
         data = {
-            "model": "google/gemini-2.5-flash-image",
+            "model": modelo,
             "messages": [
                 {
                     "role": "user",
@@ -67,9 +102,10 @@ class Op_client:
                 }
             ]
         }
-        message =self.__generar_requests(data, 2)["images"][0]["image_url"]["url"].split(",")[1]
+        mensaje_raw = self.__generar_requests(data, 2)["images"][0]["image_url"]["url"]
+        message = mensaje_raw.split(",")[1]
         # Guardar como archivo PNG
-        with open("grupo5/imagen_recibida.png", "wb") as f:
+        with open("/src/imagen_recibida.png", "wb") as f:
             f.write(base64.b64decode(message))
-        print("Imagen guardada como 'imagen_recibida.png' en la carpeta 'grupo5'.")
+        return mensaje_raw
        
