@@ -38,6 +38,7 @@ Example:
 
 import os
 import logging
+import time
 from typing import Optional, Dict, List
 import requests
 from dotenv import load_dotenv
@@ -136,17 +137,26 @@ class OpenRouterClient:
         """
         return api_key.startswith('sk-or-v1-') and len(api_key) > 20
     
-    def _make_request(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None) -> Dict:
+    def _make_request(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None, max_retries: int = 3) -> Dict:
 
-        """Realiza una solicitud a la API de OpenRouter.
+        """
+        Realiza una solicitud a la API de OpenRouter con reintentos automáticos.
+        
         Args:
             model (str): Nombre del modelo a utilizar.
             messages (List[Dict]): Lista de mensajes para el modelo.
             extra_params (Optional[Dict]): Parámetros adicionales para la solicitud.
+            max_retries (int): Número máximo de reintentos en caso de error temporal (default: 3).
+            
         Returns:
             Dict: Respuesta de la API.
+            
         Raises:
-            ValueError: Si la API retorna un error o la solicitud falla.
+            ValueError: Si la API retorna un error o la solicitud falla después de todos los reintentos.
+            
+        Note:
+            Los reintentos se aplican solo para errores de red temporales y timeouts.
+            Usa backoff exponencial: espera 1s, 2s, 4s entre reintentos.
         """
         payload: Dict = {
             "model": model,
@@ -157,36 +167,49 @@ class OpenRouterClient:
 
         logger.debug(f"Enviando request a OpenRouter - Modelo: {model}")
         
-        try:
-            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
-            response.raise_for_status()
-            data = response.json()
-            
-            if isinstance(data, dict) and data.get("error"):
-                error_msg = data['error']
-                logger.error(f"Error de API OpenRouter: {error_msg}")
-                raise ValueError(f"Error de API: {error_msg}")
-            
-            logger.debug(f"Respuesta exitosa de OpenRouter para modelo {model}")
-            return data
-            
-        except requests.exceptions.Timeout:
-            logger.error(f"Timeout en request a OpenRouter (modelo: {model})")
-            raise ValueError("La solicitud a OpenRouter excedió el tiempo límite de 30 segundos")
-        except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
-            
-            # Manejo específico de Rate Limiting
-            if status_code == 429:
-                retry_after = e.response.headers.get('Retry-After', 'desconocido')
-                logger.warning(f"Rate limit alcanzado. Reintentar después de: {retry_after} segundos")
-                raise ValueError(f"Límite de requests alcanzado. Intenta de nuevo en {retry_after} segundos")
-            
-            logger.error(f"HTTP Error {status_code}: {e.response.text[:200]}")
-            raise ValueError(f"Error HTTP {status_code}: {str(e)}")
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error en request a OpenRouter: {str(e)}")
-            raise ValueError(f"Error en request: {e}")
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                
+                if isinstance(data, dict) and data.get("error"):
+                    error_msg = data['error']
+                    logger.error(f"Error de API OpenRouter: {error_msg}")
+                    raise ValueError(f"Error de API: {error_msg}")
+                
+                logger.debug(f"Respuesta exitosa de OpenRouter para modelo {model}")
+                return data
+                
+            except requests.exceptions.Timeout:
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt  # Backoff exponencial: 1s, 2s, 4s
+                    logger.warning(f"Timeout en intento {attempt + 1}/{max_retries}. Reintentando en {wait_time}s...")
+                    time.sleep(wait_time)
+                    continue
+                logger.error(f"Timeout en request a OpenRouter después de {max_retries} intentos (modelo: {model})")
+                raise ValueError("La solicitud a OpenRouter excedió el tiempo límite después de múltiples intentos")
+                
+            except requests.exceptions.HTTPError as e:
+                status_code = e.response.status_code
+                
+                # Manejo específico de Rate Limiting
+                if status_code == 429:
+                    retry_after = e.response.headers.get('Retry-After', 'desconocido')
+                    logger.warning(f"Rate limit alcanzado. Reintentar después de: {retry_after} segundos")
+                    raise ValueError(f"Límite de requests alcanzado. Intenta de nuevo en {retry_after} segundos")
+                
+                logger.error(f"HTTP Error {status_code}: {e.response.text[:200]}")
+                raise ValueError(f"Error HTTP {status_code}: {str(e)}")
+                
+            except requests.exceptions.RequestException as e:
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logger.warning(f"Error de red en intento {attempt + 1}/{max_retries}. Reintentando en {wait_time}s...")
+                    time.sleep(wait_time)
+                    continue
+                logger.error(f"Error en request a OpenRouter después de {max_retries} intentos: {str(e)}")
+                raise ValueError(f"Error en request después de {max_retries} intentos: {e}")
     
     def _extract_text_content(self, response: Dict) -> str:
         """Extrae texto de la respuesta del API de forma robusta.
