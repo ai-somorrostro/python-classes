@@ -2,6 +2,25 @@
 
 API Gateway desarrollada con FastAPI para interactuar con los modelos de OpenRouter.
 
+**Issue #9**: Integración de una Clase para APIs REST en el Proyecto
+
+## ⚡ Inicio Rápido
+
+```bash
+# 1. Clonar y navegar al proyecto
+cd openrouter/grupo2
+
+# 2. Configurar API key
+cp .env.example .env
+# Editar .env con tu OPENROUTER_API_KEY
+
+# 3. Ejecutar con Docker
+docker-compose up --build
+
+# 4. Acceder a la API
+# Swagger UI: http://localhost:8000/docs
+```
+
 ## 🚀 Características
 
 - **API REST**: Endpoints HTTP para LLM, Razonador e Imagen
@@ -60,14 +79,41 @@ pip install -r ../../requirements.txt
 
 ## 🐳 Ejecución con Docker
 
-### Opción 1: Docker Compose (Recomendado)
+### Requisitos previos
+
+- Docker y Docker Compose instalados
+- Archivo `.env` configurado con `OPENROUTER_API_KEY`
+
+### Pasos para ejecutar
+
+1. **Navegar a la carpeta del proyecto**:
 
 ```bash
 cd openrouter/grupo2
+```
+
+2. **Construir y ejecutar con Docker Compose**:
+
+```bash
 docker-compose up --build
 ```
 
+3. **Acceder a la documentación**:
+
+- **Swagger UI**: <http://localhost:8000/docs>
+- **ReDoc**: <http://localhost:8000/redoc>
+- **API Root**: <http://localhost:8000/>
+- **Health Check**: <http://localhost:8000/health>
+
+4. **Detener el servicio**:
+
+```bash
+docker-compose down
+```
+
 ### Opción 2: Docker Manual
+
+Si prefieres construir y ejecutar manualmente:
 
 ```bash
 cd /home/daiwol/python-classes
@@ -266,3 +312,18 @@ PYTHONPATH=src python -m uvicorn openrouter_app.main:app
 ## 📄 Licencia
 
 Proyecto educativo - Grupo 2
+
+---
+
+## ✅ Checklist Issue #9
+
+Cumplimiento de requisitos según [Issue #9](https://github.com/ai-somorrostro/python-classes/issues/9):
+
+- ✅ **Clase API FastAPI separada**: `src/openrouter_app/api/llm_api.py`
+- ✅ **Comunicación con clase OpenRouter**: `src/openrouter_app/services/openrouter_client.py`
+- ✅ **Un endpoint por método de OpenRouter**: `/chat/llm`, `/chat/reasoner`, `/image/generate`
+- ✅ **Sin Pydantic**: Parámetros como query strings
+- ✅ **Swagger operativo**: Accesible en `/docs` y `/redoc`
+- ✅ **Docker funcional**: `docker-compose up --build` en puerto 8000
+- ✅ **Código en rama del grupo**: `grupo2-v6-fastapi`
+- ✅ **README con documentación**: Completo con ejemplos y troubleshooting
