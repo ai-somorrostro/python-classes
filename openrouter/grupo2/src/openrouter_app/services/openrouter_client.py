@@ -107,13 +107,34 @@ class OpenRouterClient:
         if not api_key:
             logger.error("No se encontró una API key válida")
             raise ValueError("Se requiere una API key válida.")
+        
+        # Validar formato de API key
+        if not self._validate_api_key_format(api_key):
+            logger.error(f"Formato de API key inválido: debe comenzar con 'sk-or-v1-'")
+            raise ValueError("API key debe tener formato válido (sk-or-v1-...)")
 
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
         self.headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
-        logger.info("OpenRouterClient inicializado correctamente")
+        logger.info("OpenRouterClient inicializado correctamente con API key válida")
+    
+    @staticmethod
+    def _validate_api_key_format(api_key: str) -> bool:
+        """
+        Valida el formato de la API key de OpenRouter.
+        
+        Args:
+            api_key (str): API key a validar
+            
+        Returns:
+            bool: True si el formato es válido, False en caso contrario
+            
+        Note:
+            Las API keys de OpenRouter tienen formato: sk-or-v1-...
+        """
+        return api_key.startswith('sk-or-v1-') and len(api_key) > 20
     
     def _make_request(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None) -> Dict:
 
