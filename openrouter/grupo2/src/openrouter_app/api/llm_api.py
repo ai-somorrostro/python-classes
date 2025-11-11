@@ -255,3 +255,65 @@ async def generate_image_endpoint(prompt: str, model: str = "google/gemini-2.5-f
     except Exception as e:
         logger.error(f"Error interno en /image/generate: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
+
+# Endpoints de administración del cache
+@router.get("/cache/stats")
+async def cache_stats_endpoint():
+    """
+    Obtiene estadísticas del cache en memoria.
+    
+    Este endpoint proporciona información sobre el estado actual del cache,
+    incluyendo número de entradas almacenadas y configuración.
+    
+    Returns:
+        dict: Objeto JSON con estadísticas del cache:
+            - enabled (bool): Si el cache está habilitado
+            - size (int): Número actual de entradas en cache
+            - max_size (int): Tamaño máximo configurado
+    
+    Example:
+        ```bash
+        curl http://localhost:8000/openrouter/cache/stats
+        # {"enabled":true,"size":5,"max_size":100}
+        ```
+    
+    Note:
+        Si el cache no está habilitado, size siempre será 0
+    """
+    logger.info("Endpoint /cache/stats llamado")
+    stats = client.get_cache_stats()
+    return stats
+
+
+@router.delete("/cache/clear")
+async def clear_cache_endpoint():
+    """
+    Limpia completamente el cache en memoria.
+    
+    Este endpoint elimina todas las entradas del cache, forzando que
+    las próximas requests hagan llamadas reales a OpenRouter API.
+    Útil para testing o cuando se necesitan respuestas frescas.
+    
+    Returns:
+        dict: Objeto JSON con el resultado:
+            - message (str): Mensaje de confirmación
+            - stats (dict): Estadísticas del cache después de limpiarlo
+    
+    Example:
+        ```bash
+        curl -X DELETE http://localhost:8000/openrouter/cache/clear
+        # {"message":"Cache limpiado exitosamente","stats":{"enabled":true,"size":0,"max_size":100}}
+        ```
+    
+    Note:
+        Este endpoint funciona incluso si el cache está deshabilitado,
+        pero en ese caso no tendrá efecto práctico
+    """
+    logger.info("Endpoint /cache/clear llamado")
+    client.clear_cache()
+    stats = client.get_cache_stats()
+    return {
+        "message": "Cache limpiado exitosamente",
+        "stats": stats
+    }
