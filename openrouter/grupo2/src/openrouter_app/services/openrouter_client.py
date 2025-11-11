@@ -1,9 +1,17 @@
 import os
+import logging
 from typing import Optional, Dict, List
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configurar logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 
 class OpenRouterClient:
@@ -20,6 +28,7 @@ class OpenRouterClient:
         if api_key is None:
             api_key = os.getenv('OPENROUTER_API_KEY')
         if not api_key:
+            logger.error("No se encontró una API key válida")
             raise ValueError("Se requiere una API key válida.")
 
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
@@ -27,6 +36,7 @@ class OpenRouterClient:
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
+        logger.info("OpenRouterClient inicializado correctamente")
     
     def _make_request(self, model: str, messages: List[Dict], extra_params: Optional[Dict] = None) -> Dict:
 
@@ -47,14 +57,29 @@ class OpenRouterClient:
         if extra_params:
             payload.update(extra_params)
 
+        logger.debug(f"Enviando request a OpenRouter - Modelo: {model}")
+        
         try:
             response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
             response.raise_for_status()
             data = response.json()
+            
             if isinstance(data, dict) and data.get("error"):
-                raise ValueError(f"Error de API: {data['error']}")
+                error_msg = data['error']
+                logger.error(f"Error de API OpenRouter: {error_msg}")
+                raise ValueError(f"Error de API: {error_msg}")
+            
+            logger.debug(f"Respuesta exitosa de OpenRouter para modelo {model}")
             return data
+            
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout en request a OpenRouter (modelo: {model})")
+            raise ValueError("La solicitud a OpenRouter excedió el tiempo límite de 30 segundos")
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP Error {e.response.status_code}: {e.response.text[:200]}")
+            raise ValueError(f"Error HTTP {e.response.status_code}: {str(e)}")
         except requests.exceptions.RequestException as e:
+            logger.error(f"Error en request a OpenRouter: {str(e)}")
             raise ValueError(f"Error en request: {e}")
     
     def _extract_text_content(self, response: Dict) -> str:
@@ -62,6 +87,7 @@ class OpenRouterClient:
         Soporta tanto contenido como string (legacy) como lista de partes (OpenRouter moderno).
         """
         if "choices" not in response or not response["choices"]:
+            logger.warning("Respuesta sin choices válidos")
             raise ValueError("Respuesta sin choices válidos")
         choice = response["choices"][0]
         message = choice.get("message") or {}
@@ -86,11 +112,13 @@ class OpenRouterClient:
             if texts:
                 return "\n".join(texts)
 
+        logger.error(f"No se pudo extraer contenido de texto. Estructura: {type(content)}")
         raise ValueError("Respuesta sin mensaje o contenido de texto válido")
 
     def _extract_image_url(self, response: Dict) -> str:
         """Extrae una URL de imagen de la respuesta del API de forma robusta."""
         if "choices" not in response or not response["choices"]:
+            logger.warning("Respuesta sin choices válidos")
             raise ValueError("Respuesta sin choices válidos")
         choice = response["choices"][0]
         message = choice.get("message") or {}
@@ -114,6 +142,7 @@ class OpenRouterClient:
                 if isinstance(url_dict, dict) and url_dict.get("url"):
                     return url_dict["url"]
 
+        logger.error(f"No se pudo extraer URL de imagen. Estructura: {type(content)}")
         raise ValueError("Respuesta sin URL de imagen válida")
 
     def chat_llm(self, prompt: str) -> str:
@@ -132,9 +161,13 @@ class OpenRouterClient:
             >>> response = client.chat_llm("Hola, ¿cómo estás?")
         """
         if not prompt or not prompt.strip():
+            logger.warning("Intento de llamar chat_llm con prompt vacío")
             raise ValueError("El prompt no puede estar vacío")
+        
         model = "google/gemini-2.0-flash-lite-001"
         messages = [{"role": "user", "content": prompt}]
+        logger.info(f"Llamando chat_llm con modelo {model}")
+        
         response = self._make_request(model, messages)
         return self._extract_text_content(response)
     
@@ -154,9 +187,13 @@ class OpenRouterClient:
             >>> response = client.chat_reasoner("Resuelve este problema matemático...")
         """
         if not prompt or not prompt.strip():
+            logger.warning("Intento de llamar chat_reasoner con prompt vacío")
             raise ValueError("El prompt no puede estar vacío")
+        
         model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
+        logger.info(f"Llamando chat_reasoner con modelo {model}")
+        
         response = self._make_request(model, messages)
         return self._extract_text_content(response)
     
@@ -176,9 +213,13 @@ class OpenRouterClient:
             >>> image_url = client.generate_image("Un paisaje futurista al atardecer")
         """
         if not prompt or not prompt.strip():
+            logger.warning("Intento de llamar generate_image con prompt vacío")
             raise ValueError("El prompt no puede estar vacío")
+        
         model = "google/gemini-2.5-flash-image"
         messages = [{"role": "user", "content": prompt}]
         extra = {"modalities": ["image", "text"]}
+        logger.info(f"Llamando generate_image con modelo {model}")
+        
         data = self._make_request(model, messages, extra)
         return self._extract_image_url(data)

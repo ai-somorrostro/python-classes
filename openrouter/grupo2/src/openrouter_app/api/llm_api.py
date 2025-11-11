@@ -1,5 +1,9 @@
 from fastapi import APIRouter, HTTPException
+import logging
 from ..services.openrouter_client import OpenRouterClient
+
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 # Inicializar el router de FastAPI
 router = APIRouter(
@@ -26,12 +30,16 @@ async def chat_llm_endpoint(prompt: str):
     Raises:
         HTTPException: Si hay un error en la solicitud o validación.
     """
+    logger.info(f"Endpoint /chat/llm llamado con prompt de longitud {len(prompt)}")
     try:
         response = client.chat_llm(prompt)
+        logger.info("Respuesta generada exitosamente en /chat/llm")
         return {"response": response}
     except ValueError as e:
+        logger.warning(f"Error de validación en /chat/llm: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        logger.error(f"Error interno en /chat/llm: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 
@@ -49,12 +57,16 @@ async def chat_reasoner_endpoint(prompt: str):
     Raises:
         HTTPException: Si hay un error en la solicitud o validación.
     """
+    logger.info(f"Endpoint /chat/reasoner llamado con prompt de longitud {len(prompt)}")
     try:
         response = client.chat_reasoner(prompt)
+        logger.info("Respuesta generada exitosamente en /chat/reasoner")
         return {"response": response}
     except ValueError as e:
+        logger.warning(f"Error de validación en /chat/reasoner: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        logger.error(f"Error interno en /chat/reasoner: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 
@@ -72,10 +84,14 @@ async def generate_image_endpoint(prompt: str):
     Raises:
         HTTPException: Si hay un error en la solicitud o validación.
     """
+    logger.info(f"Endpoint /image/generate llamado con prompt de longitud {len(prompt)}")
     try:
         image_url = client.generate_image(prompt)
+        logger.info("Imagen generada exitosamente en /image/generate")
         return {"image_url": image_url}
     except ValueError as e:
+        logger.warning(f"Error de validación en /image/generate: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        logger.error(f"Error interno en /image/generate: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
