@@ -31,7 +31,17 @@ class OpenRouterClient:
                 }
             ]
         }
-        response = requests.post(base_url, headers=self.headers, json=data)
+        try:
+            response = requests.post(self.base_url, headers=self.headers, json=data, timeout=30)
+            response.raise_for_status()
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+            return f"Request error: {e}"
+        except (KeyError, IndexError) as e:
+            return f"Response processing error: {e}"
+        except Exception as e:
+            return f"Unexpected error: {e}"
 
         if response.status_code == 200:
             result = response.json()
@@ -49,14 +59,17 @@ class OpenRouterClient:
             "model":model,
             "messages": [{"role": "user", "content": prompt}]
         }
-
-        response = requests.post(self.base_url, headers=self.headers, json=payload)
-
-        if response.status_code != 200:
-            raise Exception(f"Error {response.status_code}: {response.text}")
-
-        data = response.json()
-        return data["choices"][0]["url"]["content"]
+        try:
+            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            return data["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+            return f"Request error: {e}"
+        except (KeyError, IndexError) as e:
+            return f"Response processing error: {e}"
+        except Exception as e:
+            return f"Unexpected error: {e}"
     
     def generate_image(self, prompt: str):
         """Método para generar una imagen usando el modelo openai/gpt-5-image-mini"""
@@ -67,15 +80,20 @@ class OpenRouterClient:
                 {"role": "user", "content": prompt}
             ]
         }
-        response = requests.post(self.base_url, headers=self.headers, json=data)
-
-        if response.status_code == 200:
+        try:
+            response = requests.post(self.base_url, headers=self.headers, json=data, timeout=30)
+            response.raise_for_status()
             result = response.json()
-            try:
-                # El README indica que la URL de la imagen está en choices[0].message.content
-                image_url = result["choices"][0]["message"]["content"]
-                return image_url
-            except Exception:
-                return f"Error procesando respuesta: {result}"
-        else:
-            return f"Error: {response.status_code} - {response.text}"
+            choices = result.get("choices")
+            if choices:
+                message = choices[0].get("message", {})
+                images = message.get("images")
+                if images:
+                    return images[0].get("image_url", {}).get("url")
+            return "No images returned"
+        except requests.exceptions.RequestException as e:
+            return f"Request error: {e}"
+        except (KeyError, IndexError, TypeError) as e:
+            return f"Response processing error: {e}"
+        except Exception as e:
+            return f"Unexpected error: {e}"
