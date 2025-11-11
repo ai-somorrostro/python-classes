@@ -5,7 +5,7 @@ import base64
 import sys
 
 load_dotenv() 
-client = TestClient(app)
+API_URL = "http://localhost:8000"
 
 if __name__ == "__main__":
     api_key = os.getenv("OPENROUTER_API_KEY") #Cargar APIKey
@@ -46,14 +46,24 @@ if __name__ == "__main__":
         "user_message": "Explícame la teoría de la relatividad en 2 frases",
         "system_prompt": "Eres un experto explicando conceptos complejos de manera simple."
     }
-    response = client.post("/razonador", json=chat_payload)
+    response = requests.post(f"{API_URL}/razonador", json=chat_payload)
     print("Razonador:", response.json())
+
     
     llm_payload = {"prompt": "Escribe un poema sobre la inteligencia artificial"}
-    response = client.post("/llm", json=llm_payload)
+    response = requests.post(f"{API_URL}/llm", json=llm_payload)
     print("LLM:", response.json())
     
     
     image_payload = {"prompt": "Un robot pintando un cuadro al estilo Van Gogh"}
-    response = client.post("/image", json=image_payload)
+    response = requests.post(f"{API_URL}/image", json=image_payload)
     print("Imagen URL:", response.json())
+    
+    b64_string = response.json()["image_url"]
+    if b64_string.startswith("data:image"):
+        b64_string = b64_string.split(",")[1]
+
+    with open("imagen_generada.png", "wb") as f:
+        f.write(base64.b64decode(b64_string))
+
+    print("Imagen guardada como imagen_generada.png")
