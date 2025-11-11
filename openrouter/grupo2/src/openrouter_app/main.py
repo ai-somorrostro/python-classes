@@ -32,9 +32,14 @@ from fastapi import FastAPI, HTTPException
 from .api import llm_api
 from .services.openrouter_client import OpenRouterClient
 import logging
+import os
+import time
 
 # Configurar logger
 logger = logging.getLogger(__name__)
+
+# Guardar timestamp de inicio
+_start_time = time.time()
 
 # Crear la aplicación FastAPI
 app = FastAPI(
@@ -52,32 +57,53 @@ app.include_router(llm_api.router)
 @app.get("/")
 async def root():
     """
-    Endpoint raíz de la API.
+    Endpoint raíz de la API con información completa del servicio.
     
-    Proporciona información básica sobre la API y enlaces a la documentación
-    interactiva. Este endpoint es útil para verificar que el servidor está
-    funcionando correctamente.
+    Proporciona información detallada sobre la API, incluyendo versión,
+    estado del cache, uptime y enlaces a la documentación interactiva.
     
     Returns:
         dict: Objeto JSON con la siguiente estructura:
             - message (str): Mensaje de bienvenida
             - version (str): Versión de la API
-            - docs (str): URL de la documentación Swagger
-            - redoc (str): URL de la documentación ReDoc
+            - uptime_seconds (float): Tiempo en segundos desde que inició el servidor
+            - cache_enabled (bool): Si el cache está habilitado
+            - endpoints (dict): Enlaces a endpoints principales
     
     Example:
         ```python
         import requests
         response = requests.get("http://localhost:8000/")
         print(response.json())
-        # {'message': 'Bienvenido...', 'version': '6.0.0', ...}
+        # {
+        #   'message': 'Bienvenido...',
+        #   'version': '6.0.0',
+        #   'uptime_seconds': 123.45,
+        #   'cache_enabled': true,
+        #   'endpoints': {...}
+        # }
         ```
     """
+    uptime = time.time() - _start_time
+    cache_enabled = os.getenv("ENABLE_CACHE", "false").lower() == "true"
+    
     return {
         "message": "Bienvenido al API Gateway de OpenRouter",
         "version": "6.0.0",
-        "docs": "/docs",
-        "redoc": "/redoc"
+        "uptime_seconds": round(uptime, 2),
+        "cache_enabled": cache_enabled,
+        "endpoints": {
+            "docs": "/docs",
+            "redoc": "/redoc",
+            "health": "/health",
+            "openrouter": {
+                "chat_llm": "/openrouter/chat/llm",
+                "chat_reasoner": "/openrouter/chat/reasoner",
+                "generate_image": "/openrouter/image/generate",
+                "cache_stats": "/openrouter/cache/stats",
+                "cache_clear": "/openrouter/cache/clear"
+            }
+        }
     }
 
 
