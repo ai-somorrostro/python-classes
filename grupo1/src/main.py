@@ -5,6 +5,7 @@ import base64
 import sys
 
 load_dotenv() 
+client = TestClient(app)
 
 if __name__ == "__main__":
     api_key = os.getenv("OPENROUTER_API_KEY") #Cargar APIKey
@@ -16,7 +17,7 @@ if __name__ == "__main__":
         
     client = OpenRouterClient(api_key) #Crear el objeto openrouter
     
-    user_prompt = input("Introduce el prompt para el razonador: ")
+    """user_prompt = input("Introduce el prompt para el razonador: ")
     system_prompt = "Eres un experto explicando conceptos complejos de manera simple."
     
     respuesta = client.reasoner(user_prompt,system_prompt)
@@ -39,4 +40,20 @@ if __name__ == "__main__":
     with open("imagen_generada.png", "wb") as f:
         f.write(image_bytes)
 
-    print("Imagen guardada como imagen_generada.png")
+    print("Imagen guardada como imagen_generada.png")"""
+    
+    chat_payload = {
+        "user_message": "Explícame la teoría de la relatividad en 2 frases",
+        "system_prompt": "Eres un experto explicando conceptos complejos de manera simple."
+    }
+    response = client.post("/razonador", json=chat_payload)
+    print("Razonador:", response.json())
+    
+    llm_payload = {"prompt": "Escribe un poema sobre la inteligencia artificial"}
+    response = client.post("/llm", json=llm_payload)
+    print("LLM:", response.json())
+    
+    
+    image_payload = {"prompt": "Un robot pintando un cuadro al estilo Van Gogh"}
+    response = client.post("/image", json=image_payload)
+    print("Imagen URL:", response.json())
