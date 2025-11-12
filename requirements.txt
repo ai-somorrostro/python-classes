@@ -1,5 +1,7 @@
-requests
-python-dotenv
 fastapi
 uvicorn
-
+requests
+python-dotenv
+torch
+diffusers
+accelerate
