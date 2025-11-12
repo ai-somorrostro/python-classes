@@ -1,0 +1,10 @@
+services:
+  openrouter-fastapi:
+    build: .
+    image: openrouter-fastapi:latest
+    container_name: openrouter-fastapi
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../.env
+    restart: unless-stopped
