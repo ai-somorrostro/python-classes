@@ -25,13 +25,19 @@ class OpenRouterClient:
         if not prompt or not prompt.strip():
             raise ValueError("El prompt no puede estar vacío")
             
+             try:
              r=requests.post("https://openrouter.ai/api/v1/chat/completions",
  
             headers=self.headers,
             json={"model":"openai/gpt-5-image-mini","messages":[{"role":"user","content":prompt}]})
-        if r.status_code!=200:raise RuntimeError(f"Error {r.status_code}: {r.text}")
-        print("DEBUG Response:",r.text)
-        return r.json()["choices"][0]["message"]["content"]
+
+       r.raise_for_status()
+            print("DEBUG Response:", r.text)
+            return r.json()["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+            raise OpenRouterAPIError(f"Error de conexión o HTTP: {e}") from e
+       except (KeyError, IndexError, ValueError) as e:
+           raise OpenRouterAPIError(f"Respuesta inválida del modelo: {e}") from e
 
 
     def _make_request(self, model: str, messages: list) -> dict:
@@ -49,10 +55,7 @@ class OpenRouterClient:
 
     # Modelo razonador
     def ask_reasoner(self, prompt: str) -> str:
-        """
-        Envía un prompt al modelo razonador (openai/gpt-oss-20b:free)
-        y devuelve el texto procesado.
-        """
+      
 
         if not prompt or not prompt.strip():
         raise ValueError("El prompt no puede estar vacío")
@@ -78,7 +81,14 @@ class OpenRouterClient:
 
         model = "google/gemini-2.0-flash-exp:free"
         messages = [{"role": "user", "content": prompt}]
+        try:
         data = self._make_request(model, messages)
-        if data and "choices" in data and len(data["choices"]) > 0:
+          if not data or "choices" not in data or not data["choices"]:
+             raise OpenRouterAPIError("Respuesta sin choices válidos")
+       
             return data["choices"][0]["message"]["content"]
-        return "No se pudo extraer una respuesta válida."
+        except requests.exceptions.RequestException as e:
+        raise OpenRouterAPIError(f"Error de conexión: {e}") from e
+
+        except (KeyError, IndexError) as e:
+               raise OpenRouterAPIError(f"Respuesta inválida: {e}") from e
