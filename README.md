@@ -40,6 +40,41 @@ Desarrollar una clase Python que gestione llamadas a la API de OpenRouter para 3
 
 ### Estructura del proyecto:
 ```
+
+## How to run
+
+Para ejecutar el proyecto localmente, sigue estos pasos desde la raíz del repositorio:
+
+1. Crea un entorno virtual e instala dependencias:
+
+```bash
+cd /home/jonme/PROYECTOS/OPENROUTER/python-classes
+python3 -m venv .venv
+. .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+2. Configura la clave de la API:
+
+```bash
+cp .env.example .env
+# editar .env y poner OPENROUTER_API_KEY=<tu_api_key>
+```
+
+3. Ejecuta `main.py` (asegúrate de que `PYTHONPATH` incluya `src`):
+
+```bash
+OPENROUTER_API_KEY=tu_api_key PYTHONPATH=src .venv/bin/python -m openrouter_app.main
+```
+
+Alternativamente, activa el entorno y ejecuta sin exportar la variable en la misma línea:
+
+```bash
+. .venv/bin/activate
+PYTHONPATH=src python -m openrouter_app.main
+```
+
 openrouter/
 ├── src/
          openrouter_app
