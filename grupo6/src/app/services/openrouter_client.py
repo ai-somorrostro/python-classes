@@ -16,10 +16,15 @@ class OpenRouterClient:
             "model": model,
             "messages": messages
         }
-        
+    
         print(f"[DEBUG] Haciendo request a modelo: {model}")
         
-        response = requests.post(self.base_url, headers=self.headers, json=payload)
+        try:
+            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
+        except requests.Timeout:
+            raise Exception("Error: la solicitud excedió el tiempo de espera (timeout).")
+        except requests.RequestException as e:
+            raise Exception(f"Error de conexión o HTTP: {e}")
         
         # Verificar el status code
         print(f"[DEBUG] Status code: {response.status_code}")
@@ -39,7 +44,7 @@ class OpenRouterClient:
             raise Exception(f"Respuesta inesperada de la API. Respuesta: {response_json}")
         
         return response_json
-    
+
     def llm_normal(self, prompt):
         messages = [{"role":"user", "content": prompt}]
         response = self._post_request("google/gemini-2.0-flash-exp:free", messages)
