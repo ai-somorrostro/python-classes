@@ -3,9 +3,11 @@ version: '3.9'
 services:
   app:
     build: .
+    container_name: llm_gateway_api
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
-    environment:
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - ./app/static/images:/app/app/static/images  # Monta imágenes generadas
+    env_file:
+      - .env  # Usa todas las claves del entorno desde el .env
+    restart: unless-stopped
