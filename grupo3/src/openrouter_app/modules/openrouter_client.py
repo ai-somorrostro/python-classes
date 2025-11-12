@@ -20,7 +20,7 @@ class OpenRouterClient:
         """Genera una imagen usando el modelo openai/gpt-5-image-mini."""
         model = "openai/gpt-5-image-mini"
         messages = [{"role": "user", "content": prompt}]
-        
+    
         try:
             data = self._make_request(model, messages)
             return data["choices"][0]["message"]["content"]
@@ -36,8 +36,13 @@ class OpenRouterClient:
             "messages": messages,
         }
 
-        response = requests.post(self.base_url, headers=self.headers, json=payload)
-        response.raise_for_status()  # lanza error si hay fallo HTTP
+        response = requests.post(
+            self.base_url,
+            headers=self.headers,
+            json=payload,
+            timeout=30  
+        )
+        response.raise_for_status()  
 
         return response.json()
 
