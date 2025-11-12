@@ -1,4 +1,5 @@
 import requests
+
 class OpenRouterClient:
 
     def __init__(self, api_key: str):
@@ -39,6 +40,19 @@ class OpenRouterClient:
        except (KeyError, IndexError, ValueError) as e:
            raise OpenRouterAPIError(f"Respuesta inválida del modelo: {e}") from e
 
+    # Modelo de generación de imágenes
+    def generate_image(self, prompt: str) -> str:
+        """Genera una imagen usando el modelo openai/gpt-5-image-mini."""
+        model = "openai/gpt-5-image-mini"
+        messages = [{"role": "user", "content": prompt}]
+    
+        try:
+            data = self._make_request(model, messages)
+            return data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError):
+            return "Error: no se pudo extraer la respuesta del modelo."
+        except requests.exceptions.RequestException as e:
+            return f"Error en la solicitud: {e}"
 
     def _make_request(self, model: str, messages: list) -> dict:
         """Método interno para enviar una solicitud POST a la API."""
@@ -47,8 +61,13 @@ class OpenRouterClient:
             "messages": messages,
         }
 
-        response = requests.post(self.base_url, headers=self.headers, json=payload)
-        response.raise_for_status()  # lanza error si hay fallo HTTP
+        response = requests.post(
+            self.base_url,
+            headers=self.headers,
+            json=payload,
+            timeout=30  
+        )
+        response.raise_for_status()  
 
         return response.json()
 
@@ -75,6 +94,7 @@ class OpenRouterClient:
 
 
     #Modelo de LLM-Normal
+    # Modelo LLM-Normal
     def call_llm(self, prompt: str) -> str:
         if not prompt or not prompt.strip():
         raise ValueError("El prompt no puede estar vacío")
@@ -92,3 +112,4 @@ class OpenRouterClient:
 
         except (KeyError, IndexError) as e:
                raise OpenRouterAPIError(f"Respuesta inválida: {e}") from e
+        return "No se pudo extraer una respuesta válida."
