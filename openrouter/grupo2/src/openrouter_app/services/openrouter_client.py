@@ -412,7 +412,7 @@ class OpenRouterClient:
         raise ValueError("Respuesta sin mensaje o contenido de texto válido")
 
     def _extract_image_url(self, response: Dict) -> str:
-        """Extrae una URL de imagen de la respuesta del API de forma robusta."""
+        """Extrae una URL de imagen o datos base64 de la respuesta del API de forma robusta."""
         if "choices" not in response or not response["choices"]:
             logger.warning("Respuesta sin choices válidos")
             raise ValueError("Respuesta sin choices válidos")
@@ -427,7 +427,13 @@ class OpenRouterClient:
                     # OpenRouter retorna {'type': 'output_image', 'image_url': {'url': '...'}}
                     image_url = part.get("image_url") or {}
                     if isinstance(image_url, dict) and image_url.get("url"):
-                        return image_url["url"]
+                        url = image_url["url"]
+                        if url.startswith("data:image/"):
+                            return {"image_data": url}
+                        return {"image_url": url}
+                    # Si la imagen viene directamente como base64
+                    if part.get("data") and str(part["data"]).startswith("data:image/"):
+                        return {"image_data": part["data"]}
 
         # Caso legacy asumido en implementación anterior
         images = message.get("images")
@@ -436,10 +442,13 @@ class OpenRouterClient:
             if isinstance(first, dict):
                 url_dict = first.get("image_url")
                 if isinstance(url_dict, dict) and url_dict.get("url"):
-                    return url_dict["url"]
+                    url = url_dict["url"]
+                    if url.startswith("data:image/"):
+                        return {"image_data": url}
+                    return {"image_url": url}
 
-        logger.error(f"No se pudo extraer URL de imagen. Estructura: {type(content)}")
-        raise ValueError("Respuesta sin URL de imagen válida")
+        logger.error(f"No se pudo extraer URL o datos de imagen. Estructura: {type(content)}")
+        raise ValueError("Respuesta sin URL o datos de imagen válidos")
 
     def chat_llm(self, prompt: str, model: str = "google/gemini-2.0-flash-lite-001") -> str:
         """Genera una respuesta usando el modelo LLM de Google.

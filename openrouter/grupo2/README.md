@@ -107,11 +107,10 @@ docker-compose up --build
 3. **Acceder a la documentación**:
 
 - **Swagger UI**: <http://localhost:8000/docs>
-- **ReDoc**: <http://localhost:8000/redoc>
 - **API Root**: <http://localhost:8000/>
 - **Health Check**: <http://localhost:8000/health>
 
-4. **Detener el servicio**:
+1. **Detener el servicio**:
 
 ```bash
 docker-compose down

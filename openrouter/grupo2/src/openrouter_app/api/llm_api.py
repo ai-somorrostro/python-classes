@@ -49,58 +49,21 @@ else:
 @router.post("/chat/llm")
 async def chat_llm_endpoint(prompt: str, model: str = "google/gemini-2.0-flash-lite-001"):
     """
-    Genera respuestas usando el modelo LLM de Google Gemini 2.0 Flash Lite.
-    
-    Este endpoint procesa texto natural y genera respuestas conversacionales
-    usando el modelo Gemini 2.0 Flash Lite de Google a través de OpenRouter.
-    Es ideal para conversaciones generales, preguntas y respuestas.
-    
-    Args:
-        prompt (str): Texto de entrada para el modelo. Puede ser una pregunta,
-                     instrucción o cualquier texto que requiera procesamiento
-                     por el LLM. No puede estar vacío.
-        model (str, optional): Identificador del modelo a utilizar.
-                     Por defecto: "google/gemini-2.0-flash-lite-001"
-                     Permite usar modelos alternativos de OpenRouter.
-    
-    Returns:
-        dict: Objeto JSON con la estructura:
-            - response (str): Texto generado por el modelo
-    
-    Raises:
-        HTTPException: 
-            - 400: Si el prompt está vacío o es inválido
-            - 500: Si hay un error interno al comunicarse con OpenRouter
-    
-    Example:
-        ```bash
-        # Modelo por defecto
-        curl -X POST "http://localhost:8000/openrouter/chat/llm?prompt=Explica qué es FastAPI"
-        
-        # Modelo alternativo
-        curl -X POST "http://localhost:8000/openrouter/chat/llm?prompt=Hola&model=openai/gpt-4-turbo"
-        ```
-        
-        ```python
-        import requests
-        # Modelo por defecto
-        response = requests.post(
-            "http://localhost:8000/openrouter/chat/llm",
-            params={"prompt": "¿Qué es Python?"}
-        )
-        # Modelo alternativo
-        response = requests.post(
-            "http://localhost:8000/openrouter/chat/llm",
-            params={"prompt": "¿Qué es Python?", "model": "anthropic/claude-3-opus"}
-        )
-        print(response.json()["response"])
-        ```
-    
-    Note:
-        - Modelo por defecto: google/gemini-2.0-flash-lite-001
-        - Timeout: 30 segundos
-        - Requiere OPENROUTER_API_KEY válida en variables de entorno
-        - Ver modelos disponibles: https://openrouter.ai/models
+    Genera una respuesta conversacional usando modelos LLM de OpenRouter.
+
+    **Parámetros:**
+    - `prompt` (str): Texto de entrada para el modelo. No puede estar vacío.
+    - `model` (str, opcional): Modelo LLM. Por defecto: "google/gemini-2.0-flash-lite-001".
+
+    **Respuesta:**
+    - `response` (str): Texto generado por el modelo.
+
+    **Ejemplo rápido:**
+    ```bash
+    curl -X POST "http://localhost:8000/openrouter/chat/llm?prompt=Explica qué es FastAPI"
+    ```
+
+    Para más detalles y ejemplos, consulta el README del proyecto.
     """
     logger.info(f"Endpoint /chat/llm llamado con prompt de longitud {len(prompt)}, modelo: {model}")
     try:
@@ -118,58 +81,21 @@ async def chat_llm_endpoint(prompt: str, model: str = "google/gemini-2.0-flash-l
 @router.post("/chat/reasoner")
 async def chat_reasoner_endpoint(prompt: str, model: str = "openai/gpt-oss-20b:free"):
     """
-    Genera respuestas usando el modelo Razonador GPT-OSS-20B.
-    
-    Este endpoint está optimizado para razonamiento lógico, resolución
-    de problemas matemáticos y tareas que requieren pensamiento analítico.
-    Usa el modelo GPT-OSS-20B a través de OpenRouter.
-    
-    Args:
-        prompt (str): Texto de entrada para el modelo. Especialmente útil
-                     para problemas matemáticos, razonamiento lógico, o
-                     análisis complejos. No puede estar vacío.
-        model (str, optional): Identificador del modelo a utilizar.
-                     Por defecto: "openai/gpt-oss-20b:free"
-                     Permite usar modelos alternativos de razonamiento.
-    
-    Returns:
-        dict: Objeto JSON con la estructura:
-            - response (str): Texto generado por el modelo razonador
-    
-    Raises:
-        HTTPException:
-            - 400: Si el prompt está vacío o es inválido
-            - 500: Si hay un error interno al comunicarse con OpenRouter
-    
-    Example:
-        ```bash
-        # Modelo por defecto
-        curl -X POST "http://localhost:8000/openrouter/chat/reasoner?prompt=Resuelve: 2+2*3"
-        
-        # Modelo alternativo
-        curl -X POST "http://localhost:8000/openrouter/chat/reasoner?prompt=Problema&model=openai/o1-mini"
-        ```
-        
-        ```python
-        import requests
-        # Modelo por defecto
-        response = requests.post(
-            "http://localhost:8000/openrouter/chat/reasoner",
-            params={"prompt": "Si 2x + 3 = 11, ¿cuál es el valor de x?"}
-        )
-        # Modelo alternativo
-        response = requests.post(
-            "http://localhost:8000/openrouter/chat/reasoner",
-            params={"prompt": "Problema...", "model": "anthropic/claude-3-opus"}
-        )
-        print(response.json()["response"])
-        ```
-    
-    Note:
-        - Modelo por defecto: openai/gpt-oss-20b:free
-        - Timeout: 30 segundos
-        - Requiere OPENROUTER_API_KEY válida en variables de entorno
-        - Ver modelos disponibles: https://openrouter.ai/models
+    Genera una respuesta de razonamiento usando modelos especializados de OpenRouter.
+
+    **Parámetros:**
+    - `prompt` (str): Texto de entrada para el modelo. No puede estar vacío.
+    - `model` (str, opcional): Modelo de razonamiento. Por defecto: "openai/gpt-oss-20b:free".
+
+    **Respuesta:**
+    - `response` (str): Texto generado por el modelo razonador.
+
+    **Ejemplo rápido:**
+    ```bash
+    curl -X POST "http://localhost:8000/openrouter/chat/reasoner?prompt=Resuelve: 2+2*3"
+    ```
+
+    Para más detalles y ejemplos, consulta el README del proyecto.
     """
     logger.info(f"Endpoint /chat/reasoner llamado con prompt de longitud {len(prompt)}, modelo: {model}")
     try:
@@ -187,68 +113,32 @@ async def chat_reasoner_endpoint(prompt: str, model: str = "openai/gpt-oss-20b:f
 @router.post("/image/generate")
 async def generate_image_endpoint(prompt: str, model: str = "google/gemini-2.5-flash-image"):
     """
-    Genera imágenes usando el modelo Gemini 2.5 Flash Image de Google.
-    
-    Este endpoint convierte descripciones de texto en imágenes usando
-    el modelo de generación de imágenes Gemini 2.5 Flash Image a través
-    de OpenRouter. Retorna una URL de la imagen generada.
-    
-    Args:
-        prompt (str): Descripción detallada de la imagen a generar.
-                     Cuanto más específico y descriptivo sea el prompt,
-                     mejor será el resultado. No puede estar vacío.
-        model (str, optional): Identificador del modelo a utilizar.
-                     Por defecto: "google/gemini-2.5-flash-image"
-                     Permite usar modelos alternativos de generación de imagen.
-    
-    Returns:
-        dict: Objeto JSON con la estructura:
-            - image_url (str): URL completa de la imagen generada
-    
-    Raises:
-        HTTPException:
-            - 400: Si el prompt está vacío o es inválido
-            - 500: Si hay un error interno al comunicarse con OpenRouter
-                   o si la respuesta no contiene una URL válida
-    
-    Example:
-        ```bash
-        # Modelo por defecto
-        curl -X POST "http://localhost:8000/openrouter/image/generate?prompt=Un gato astronauta en la luna"
-        
-        # Modelo alternativo
-        curl -X POST "http://localhost:8000/openrouter/image/generate?prompt=Un gato&model=openai/dall-e-3"
-        ```
-        
-        ```python
-        import requests
-        # Modelo por defecto
-        response = requests.post(
-            "http://localhost:8000/openrouter/image/generate",
-            params={"prompt": "Un paisaje futurista al atardecer con edificios flotantes"}
-        )
-        # Modelo alternativo
-        response = requests.post(
-            "http://localhost:8000/openrouter/image/generate",
-            params={"prompt": "Un robot", "model": "stability-ai/stable-diffusion-xl"}
-        )
-        print(response.json()["image_url"])
-        # https://...
-        ```
-    
-    Note:
-        - Modelo por defecto: google/gemini-2.5-flash-image
-        - Modalidades: image, text
-        - Timeout: 30 segundos
-        - Requiere OPENROUTER_API_KEY válida en variables de entorno
-        - La URL de la imagen puede tener un tiempo de expiración
-        - Ver modelos disponibles: https://openrouter.ai/models?type=image
+    Genera una imagen a partir de una descripción de texto usando modelos de OpenRouter.
+
+    **Parámetros:**
+    - `prompt` (str): Descripción de la imagen a generar. No puede estar vacío.
+    - `model` (str, opcional): Modelo de generación de imagen. Por defecto: "google/gemini-2.5-flash-image".
+
+    **Respuesta:**
+    - `image_url` (str): URL de la imagen generada, o
+    - `image_data` (str): Imagen en formato base64 (data:image/png;base64,...)
+
+
+    **Ejemplo rápido:**
+    ```bash
+    curl -X POST "http://localhost:8000/openrouter/image/generate?prompt=Un gato astronauta en la luna"
+    ```
+
+    Para más detalles y ejemplos, consulta el README del proyecto.
     """
     logger.info(f"Endpoint /image/generate llamado con prompt de longitud {len(prompt)}, modelo: {model}")
     try:
-        image_url = client.generate_image(prompt, model=model)
+        result = client.generate_image(prompt, model=model)
         logger.info("Imagen generada exitosamente en /image/generate")
-        return {"image_url": image_url}
+        if isinstance(result, dict):
+            return result
+        # Para compatibilidad con versiones anteriores
+        return {"image_url": result}
     except ValueError as e:
         logger.warning(f"Error de validación en /image/generate: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -257,63 +147,52 @@ async def generate_image_endpoint(prompt: str, model: str = "google/gemini-2.5-f
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 
-# Endpoints de administración del cache
-@router.get("/cache/stats")
-async def cache_stats_endpoint():
-    """
-    Obtiene estadísticas del cache en memoria.
-    
-    Este endpoint proporciona información sobre el estado actual del cache,
-    incluyendo número de entradas almacenadas y configuración.
-    
-    Returns:
-        dict: Objeto JSON con estadísticas del cache:
-            - enabled (bool): Si el cache está habilitado
-            - size (int): Número actual de entradas en cache
-            - max_size (int): Tamaño máximo configurado
-    
-    Example:
-        ```bash
-        curl http://localhost:8000/openrouter/cache/stats
-        # {"enabled":true,"size":5,"max_size":100}
-        ```
-    
-    Note:
-        Si el cache no está habilitado, size siempre será 0
-    """
-    logger.info("Endpoint /cache/stats llamado")
-    stats = client.get_cache_stats()
-    return stats
+if enable_cache:
+    # Endpoints de administración del cache
+    @router.get("/cache/stats")
+    async def cache_stats_endpoint():
+        """
+        Obtiene estadísticas del cache en memoria.
 
+    **Respuesta:**
+    - `enabled` (bool): Si el cache está habilitado
 
-@router.delete("/cache/clear")
-async def clear_cache_endpoint():
-    """
-    Limpia completamente el cache en memoria.
-    
-    Este endpoint elimina todas las entradas del cache, forzando que
-    las próximas requests hagan llamadas reales a OpenRouter API.
-    Útil para testing o cuando se necesitan respuestas frescas.
-    
-    Returns:
-        dict: Objeto JSON con el resultado:
-            - message (str): Mensaje de confirmación
-            - stats (dict): Estadísticas del cache después de limpiarlo
-    
-    Example:
-        ```bash
-        curl -X DELETE http://localhost:8000/openrouter/cache/clear
-        # {"message":"Cache limpiado exitosamente","stats":{"enabled":true,"size":0,"max_size":100}}
-        ```
-    
-    Note:
-        Este endpoint funciona incluso si el cache está deshabilitado,
-        pero en ese caso no tendrá efecto práctico
-    """
-    logger.info("Endpoint /cache/clear llamado")
-    client.clear_cache()
-    stats = client.get_cache_stats()
-    return {
-        "message": "Cache limpiado exitosamente",
-        "stats": stats
-    }
+    - `size` (int): Número actual de entradas en cache
+
+    - `max_size` (int): Tamaño máximo configurado
+
+    **Ejemplo rápido:**
+    ```bash
+    curl http://localhost:8000/openrouter/cache/stats
+    ```
+
+    Para más detalles, consulta el README del proyecto.
+        """
+        logger.info("Endpoint /cache/stats llamado")
+        stats = client.get_cache_stats()
+        return stats
+
+    @router.delete("/cache/clear")
+    async def clear_cache_endpoint():
+        """
+        Limpia completamente el cache en memoria.
+
+    **Respuesta:**
+    - `message` (str): Mensaje de confirmación
+
+    - `stats` (dict): Estadísticas del cache después de limpiarlo
+
+    **Ejemplo rápido:**
+    ```bash
+    curl -X DELETE http://localhost:8000/openrouter/cache/clear
+    ```
+
+    Para más detalles, consulta el README del proyecto.
+        """
+        logger.info("Endpoint /cache/clear llamado")
+        client.clear_cache()
+        stats = client.get_cache_stats()
+        return {
+            "message": "Cache limpiado exitosamente",
+            "stats": stats
+        }

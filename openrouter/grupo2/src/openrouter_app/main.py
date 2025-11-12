@@ -55,32 +55,21 @@ app.include_router(llm_api.router)
 @app.get("/")
 async def root():
     """
-    Endpoint raíz de la API con información completa del servicio.
-    
-    Proporciona información detallada sobre la API, incluyendo versión,
-    estado del cache, uptime y enlaces a la documentación interactiva.
-    
-    Returns:
-        dict: Objeto JSON con la siguiente estructura:
-            - message (str): Mensaje de bienvenida
-            - version (str): Versión de la API
-            - uptime_seconds (float): Tiempo en segundos desde que inició el servidor
-            - cache_enabled (bool): Si el cache está habilitado
-            - endpoints (dict): Enlaces a endpoints principales
-    
-    Example:
-        ```python
-        import requests
-        response = requests.get("http://localhost:8000/")
-        print(response.json())
-        # {
-        #   'message': 'Bienvenido...',
-        #   'version': '6.0.0',
-        #   'uptime_seconds': 123.45,
-        #   'cache_enabled': true,
-        #   'endpoints': {...}
-        # }
-        ```
+    Muestra información general y enlaces principales de la API.
+
+    **Respuesta:**
+    - `message` (str): Mensaje de bienvenida
+    - `version` (str): Versión de la API
+    - `uptime_seconds` (float): Tiempo en segundos desde que inició el servidor
+    - `cache_enabled` (bool): Si el cache está habilitado
+    - `endpoints` (dict): Enlaces a endpoints principales
+
+    **Ejemplo rápido:**
+    ```python
+    import requests
+    response = requests.get("http://localhost:8000/")
+    print(response.json())
+    ```
     """
     uptime = time.time() - _start_time
     cache_enabled = os.getenv("ENABLE_CACHE", "false").lower() == "true"
@@ -107,35 +96,19 @@ async def root():
 @app.get("/health")
 async def health_check():
     """
-    Endpoint para verificar el estado de la API (health check mejorado).
-    
-    Este endpoint verifica no solo que el servidor esté funcionando, sino también
-    que puede comunicarse correctamente con OpenRouter API. Es utilizado por
-    Docker healthcheck y sistemas de monitoreo.
-    
-    Verifica:
-        - El servidor FastAPI está respondiendo
-        - La API key de OpenRouter está configurada
-        - La conexión con OpenRouter API es posible
-    
-    Returns:
-        dict: Objeto JSON con el estado:
-            - status (str): Estado del servicio ("healthy" o "degraded")
-            - openrouter_connection (str): Estado de conexión con OpenRouter
-            - api_key_configured (bool): Si la API key está presente
-    
-    Raises:
-        HTTPException: 503 si OpenRouter no está disponible
-    
-    Example:
-        ```bash
-        curl http://localhost:8000/health
-        # {"status":"healthy","openrouter_connection":"ok","api_key_configured":true}
-        ```
-    
-    Note:
-        En caso de error de conexión con OpenRouter, retorna status "degraded"
-        pero sigue devolviendo 200 OK para no afectar el healthcheck de Docker.
+    Verifica el estado de la API y la conectividad con OpenRouter.
+
+    **Respuesta:**
+    - `status` (str): Estado del servicio ("healthy" o "degraded")
+    - `openrouter_connection` (str): Estado de conexión con OpenRouter
+    - `api_key_configured` (bool): Si la API key está presente
+
+    **Ejemplo rápido:**
+    ```python
+    import requests
+    response = requests.get("http://localhost:8000/health")
+    print(response.json())
+    ```
     """
     health_status = {
         "status": "healthy",
