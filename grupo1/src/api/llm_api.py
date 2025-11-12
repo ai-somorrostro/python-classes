@@ -11,7 +11,13 @@ API_KEY = os.getenv("OPENROUTER_API_KEY")  # Puedes usar variable de entorno
 client = OpenRouterClient(API_KEY)
 
 # --- Inicializar FastAPI ---
-app = FastAPI(title="OpenRouter API con FastAPI")
+app = FastAPI(
+    title="OpenRouter API con FastAPI",
+    version="1.0.0",
+    docs_url="/docs",         # Ruta para Swagger UI
+    redoc_url="/redoc",       # Ruta para ReDoc
+    openapi_url="/openapi.json"  # Ruta del esquema OpenAPI
+    )
 
 # --- Modelos Pydantic para las peticiones ---
 class ChatRequest(BaseModel):
