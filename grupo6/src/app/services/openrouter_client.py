@@ -1,6 +1,6 @@
-import os
 import requests
 import json
+from typing import List, Dict, Any
 
 class OpenRouterClient:
     """
@@ -8,36 +8,36 @@ class OpenRouterClient:
     Permite enviar prompts a distintos modelos de lenguaje o generar imágenes.
     """
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str) -> None:
         """
         Inicializa el cliente con la clave API.
 
         Args:
             api_key (str): Clave de autenticación para OpenRouter.
         """
-        self.api_key = api_key
-        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.headers = {
+        self.api_key: str = api_key
+        self.base_url: str = "https://openrouter.ai/api/v1/chat/completions"
+        self.headers: Dict[str, str] = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
 
-    def _post_request(self, model: str, messages: list[dict]) -> dict:
+    def _post_request(self, model: str, messages: List[Dict[str, str]]) -> Dict[str, Any]:
         """
         Envía una solicitud POST al endpoint de OpenRouter.
 
         Args:
             model (str): Nombre del modelo a usar.
-            messages (list[dict]): Lista de mensajes en formato ChatGPT (roles y contenido).
+            messages (List[Dict[str, str]]): Lista de mensajes en formato ChatGPT (roles y contenido).
 
         Returns:
-            dict: Respuesta completa en formato JSON devuelta por la API.
+            Dict[str, Any]: Respuesta completa en formato JSON devuelta por la API.
 
         Raises:
             ValueError: Si ocurre un error de red, timeout o HTTP.
             Exception: Si la respuesta de la API no tiene el formato esperado.
         """
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "messages": messages
         }
@@ -51,7 +51,7 @@ class OpenRouterClient:
                 json=payload,
                 timeout=30
             )
-            response.raise_for_status()  # ⚠️ Lanza HTTPError si el código no es 200–299
+            response.raise_for_status()
 
         except requests.exceptions.Timeout as e:
             raise ValueError(f"Timeout al conectar con OpenRouter: {e}") from e
@@ -67,7 +67,7 @@ class OpenRouterClient:
 
         print(f"[DEBUG] Status code: {response.status_code}")
 
-        response_json = response.json()
+        response_json: Dict[str, Any] = response.json()
         print(f"[DEBUG] Respuesta completa:\n{json.dumps(response_json, indent=2)}")
 
         if "error" in response_json:
@@ -94,8 +94,8 @@ class OpenRouterClient:
         if not prompt.strip():
             raise ValueError("El prompt no puede estar vacío.")
 
-        messages = [{"role": "user", "content": prompt}]
-        response = self._post_request("google/gemini-2.0-flash-exp:free", messages)
+        messages: List[Dict[str, str]] = [{"role": "user", "content": prompt}]
+        response: Dict[str, Any] = self._post_request("google/gemini-2.0-flash-exp:free", messages)
         return response["choices"][0]["message"]["content"]
 
     def razonador(self, prompt: str) -> str:
@@ -114,11 +114,11 @@ class OpenRouterClient:
         if not prompt.strip():
             raise ValueError("El prompt no puede estar vacío.")
 
-        messages = [{"role": "user", "content": prompt}]
-        response = self._post_request("openai/gpt-oss-20b:free", messages)
+        messages: List[Dict[str, str]] = [{"role": "user", "content": prompt}]
+        response: Dict[str, Any] = self._post_request("openai/gpt-oss-20b:free", messages)
         return response["choices"][0]["message"]["content"]
 
-    def generar_imagen(self, prompt: str) -> dict:
+    def generar_imagen(self, prompt: str) -> Dict[str, Any]:
         """
         Genera una imagen a partir de un prompt de texto usando 'openai/gpt-5-image-mini'.
 
@@ -126,7 +126,7 @@ class OpenRouterClient:
             prompt (str): Descripción textual de la imagen a generar.
 
         Returns:
-            dict: Respuesta completa de la API, incluyendo los datos de la imagen.
+            Dict[str, Any]: Respuesta completa de la API, incluyendo los datos de la imagen.
 
         Raises:
             ValueError: Si el prompt está vacío o la API devuelve un error.
@@ -134,6 +134,6 @@ class OpenRouterClient:
         if not prompt.strip():
             raise ValueError("El prompt no puede estar vacío.")
 
-        messages = [{"role": "user", "content": prompt}]
-        response = self._post_request("openai/gpt-5-image-mini", messages)
+        messages: List[Dict[str, str]] = [{"role": "user", "content": prompt}]
+        response: Dict[str, Any] = self._post_request("openai/gpt-5-image-mini", messages)
         return response
