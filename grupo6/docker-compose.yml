@@ -1,0 +1,16 @@
+services:
+  llm_api:
+    # El contexto de compilación es el directorio actual (grupo6), lo cual es correcto
+    build: .
+    container_name: fast_api_container
+    ports:
+      - "8000:8000"
+    # Monta el directorio del código fuente en el contenedor para el live-reload
+    volumes:
+      # Monta la carpeta ./src/app del host en /src/app del contenedor
+      - ./src/app:/src/app
+    # Apunta al archivo .env dentro de la carpeta de la aplicación
+    env_file:
+      - src/app/.env
+    environment:
+      - ENV=production
