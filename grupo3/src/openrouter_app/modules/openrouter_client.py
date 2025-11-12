@@ -4,6 +4,9 @@ class OpenRouterClient:
 
     def __init__(self, api_key: str):
         """Inicializa la clase con la API Key y configuración base."""
+        if not api_key or not api_key.strip():
+        raise ValueError("API key no puede estar vacía")
+
         self.api_key = api_key
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
         self.headers = {
@@ -11,9 +14,31 @@ class OpenRouterClient:
             "Content-Type": "application/json",
         }
 
+
     def is_configured(self) -> bool:
         """Verifica que haya una API key configurada."""
         return bool(self.api_key)
+
+
+    # Modelo de generación de imagenes
+    def generate_image(self,prompt):
+       
+        if not prompt or not prompt.strip():
+            raise ValueError("El prompt no puede estar vacío")
+            
+             try:
+             r=requests.post("https://openrouter.ai/api/v1/chat/completions",
+ 
+            headers=self.headers,
+            json={"model":"openai/gpt-5-image-mini","messages":[{"role":"user","content":prompt}]})
+
+       r.raise_for_status()
+            print("DEBUG Response:", r.text)
+            return r.json()["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+            raise OpenRouterAPIError(f"Error de conexión o HTTP: {e}") from e
+       except (KeyError, IndexError, ValueError) as e:
+           raise OpenRouterAPIError(f"Respuesta inválida del modelo: {e}") from e
 
     # Modelo de generación de imágenes
     def generate_image(self, prompt: str) -> str:
@@ -46,12 +71,14 @@ class OpenRouterClient:
 
         return response.json()
 
+
     # Modelo razonador
     def ask_reasoner(self, prompt: str) -> str:
-        """
-        Envía un prompt al modelo razonador (openai/gpt-oss-20b:free)
-        y devuelve el texto procesado.
-        """
+      
+
+        if not prompt or not prompt.strip():
+        raise ValueError("El prompt no puede estar vacío")
+
         model = "openai/gpt-oss-20b:free"
         messages = [{"role": "user", "content": prompt}]
 
@@ -65,11 +92,24 @@ class OpenRouterClient:
 
         return content
 
+
+    #Modelo de LLM-Normal
     # Modelo LLM-Normal
     def call_llm(self, prompt: str) -> str:
+        if not prompt or not prompt.strip():
+        raise ValueError("El prompt no puede estar vacío")
+
         model = "google/gemini-2.0-flash-exp:free"
         messages = [{"role": "user", "content": prompt}]
+        try:
         data = self._make_request(model, messages)
-        if data and "choices" in data and len(data["choices"]) > 0:
+          if not data or "choices" not in data or not data["choices"]:
+             raise OpenRouterAPIError("Respuesta sin choices válidos")
+       
             return data["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+        raise OpenRouterAPIError(f"Error de conexión: {e}") from e
+
+        except (KeyError, IndexError) as e:
+               raise OpenRouterAPIError(f"Respuesta inválida: {e}") from e
         return "No se pudo extraer una respuesta válida."
