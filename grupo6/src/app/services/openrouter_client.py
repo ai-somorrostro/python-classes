@@ -34,7 +34,8 @@ class OpenRouterClient:
             dict: Respuesta completa en formato JSON devuelta por la API.
 
         Raises:
-            Exception: Si la API devuelve un error o la respuesta no tiene el formato esperado.
+            ValueError: Si ocurre un error de red, timeout o HTTP.
+            Exception: Si la respuesta de la API no tiene el formato esperado.
         """
         payload = {
             "model": model,
@@ -44,11 +45,25 @@ class OpenRouterClient:
         print(f"[DEBUG] Haciendo request a modelo: {model}")
 
         try:
-            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
-        except requests.Timeout:
-            raise Exception("Error: la solicitud excedió el tiempo de espera (timeout).")
-        except requests.RequestException as e:
-            raise Exception(f"Error de conexión o HTTP: {e}")
+            response = requests.post(
+                self.base_url,
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
+            response.raise_for_status()  # ⚠️ Lanza HTTPError si el código no es 200–299
+
+        except requests.exceptions.Timeout as e:
+            raise ValueError(f"Timeout al conectar con OpenRouter: {e}") from e
+
+        except requests.exceptions.ConnectionError as e:
+            raise ValueError(f"Error de conexión con OpenRouter: {e}") from e
+
+        except requests.exceptions.HTTPError as e:
+            raise ValueError(f"Error HTTP {response.status_code}: {response.text}") from e
+
+        except requests.exceptions.RequestException as e:
+            raise ValueError(f"Error general en la solicitud a OpenRouter: {e}") from e
 
         print(f"[DEBUG] Status code: {response.status_code}")
 
