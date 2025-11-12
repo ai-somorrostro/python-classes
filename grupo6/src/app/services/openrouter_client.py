@@ -3,61 +3,122 @@ import requests
 import json
 
 class OpenRouterClient:
-    def __init__(self, api_key):
+    """
+    Cliente para interactuar con la API de OpenRouter.
+    Permite enviar prompts a distintos modelos de lenguaje o generar imágenes.
+    """
+
+    def __init__(self, api_key: str):
+        """
+        Inicializa el cliente con la clave API.
+
+        Args:
+            api_key (str): Clave de autenticación para OpenRouter.
+        """
         self.api_key = api_key
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-    
-    def _post_request(self, model, messages):
+
+    def _post_request(self, model: str, messages: list[dict]) -> dict:
+        """
+        Envía una solicitud POST al endpoint de OpenRouter.
+
+        Args:
+            model (str): Nombre del modelo a usar.
+            messages (list[dict]): Lista de mensajes en formato ChatGPT (roles y contenido).
+
+        Returns:
+            dict: Respuesta completa en formato JSON devuelta por la API.
+
+        Raises:
+            Exception: Si la API devuelve un error o la respuesta no tiene el formato esperado.
+        """
         payload = {
             "model": model,
             "messages": messages
         }
-    
+
         print(f"[DEBUG] Haciendo request a modelo: {model}")
-        
+
         try:
             response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
         except requests.Timeout:
             raise Exception("Error: la solicitud excedió el tiempo de espera (timeout).")
         except requests.RequestException as e:
             raise Exception(f"Error de conexión o HTTP: {e}")
-        
-        # Verificar el status code
+
         print(f"[DEBUG] Status code: {response.status_code}")
-        
-        # Obtener la respuesta como JSON
+
         response_json = response.json()
-        
-        # Imprimir la respuesta completa para debugging
         print(f"[DEBUG] Respuesta completa:\n{json.dumps(response_json, indent=2)}")
-        
-        # Verificar si hay errores en la respuesta
+
         if "error" in response_json:
             raise Exception(f"Error de la API: {response_json['error']}")
-        
-        # Verificar que existe 'choices'
+
         if "choices" not in response_json:
             raise Exception(f"Respuesta inesperada de la API. Respuesta: {response_json}")
-        
+
         return response_json
 
-    def llm_normal(self, prompt):
-        messages = [{"role":"user", "content": prompt}]
+    def llm_normal(self, prompt: str) -> str:
+        """
+        Envía una solicitud de texto al modelo 'google/gemini-2.0-flash-exp:free'.
+
+        Args:
+            prompt (str): Texto de entrada para el modelo.
+
+        Returns:
+            str: Respuesta generada por el modelo.
+
+        Raises:
+            ValueError: Si el prompt está vacío o la API devuelve un error.
+        """
+        if not prompt.strip():
+            raise ValueError("El prompt no puede estar vacío.")
+
+        messages = [{"role": "user", "content": prompt}]
         response = self._post_request("google/gemini-2.0-flash-exp:free", messages)
         return response["choices"][0]["message"]["content"]
-    
-    def razonador(self, prompt):
-        messages = [{"role":"user", "content": prompt}]
+
+    def razonador(self, prompt: str) -> str:
+        """
+        Envía una solicitud al modelo 'openai/gpt-oss-20b:free' para razonamiento complejo.
+
+        Args:
+            prompt (str): Pregunta o texto que se desea analizar.
+
+        Returns:
+            str: Respuesta generada por el modelo razonador.
+
+        Raises:
+            ValueError: Si el prompt está vacío o la API devuelve un error.
+        """
+        if not prompt.strip():
+            raise ValueError("El prompt no puede estar vacío.")
+
+        messages = [{"role": "user", "content": prompt}]
         response = self._post_request("openai/gpt-oss-20b:free", messages)
         return response["choices"][0]["message"]["content"]
-    
-    def generar_imagen(self, prompt):
-        messages = [{"role":"user", "content": prompt}]
+
+    def generar_imagen(self, prompt: str) -> dict:
+        """
+        Genera una imagen a partir de un prompt de texto usando 'openai/gpt-5-image-mini'.
+
+        Args:
+            prompt (str): Descripción textual de la imagen a generar.
+
+        Returns:
+            dict: Respuesta completa de la API, incluyendo los datos de la imagen.
+
+        Raises:
+            ValueError: Si el prompt está vacío o la API devuelve un error.
+        """
+        if not prompt.strip():
+            raise ValueError("El prompt no puede estar vacío.")
+
+        messages = [{"role": "user", "content": prompt}]
         response = self._post_request("openai/gpt-5-image-mini", messages)
-        
-        # Devolver la respuesta JSON completa de la API
         return response
