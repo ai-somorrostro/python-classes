@@ -1,7 +1,6 @@
 import requests
 from dotenv import load_dotenv
 import os
-import json
 
 load_dotenv()
 
@@ -76,7 +75,7 @@ class OpenRouterClient:
         Returns:
             str: Texto de la respuesta procesada.
         """
-        model = "google/gemini-2.0-flash-exp:free"
+        model = os.getenv('model_llm')
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
         return response['choices'][0]['message']['content']
@@ -91,7 +90,7 @@ class OpenRouterClient:
         Returns:
             str: Texto de la respuesta procesada.
         """
-        model = "openai/gpt-oss-20b:free"
+        model = os.getenv('model_reasoner')
         messages = [{"role": "user", "content": prompt}]
         response = self._make_request(model, messages)
         return response['choices'][0]['message']['content']
@@ -108,7 +107,7 @@ class OpenRouterClient:
         
         Nota: Basado en la documentación de OpenRouter para multimodal/image-generation.
         """
-        model = "google/gemini-2.5-flash-image"
+        model = os.getenv('model_image')
         messages = [{"role": "user", "content": prompt}]
         extra_params = {"modalities": ["image", "text"]}  # Para habilitar generación de imágenes
         response = self._make_request(model, messages, extra_params)
