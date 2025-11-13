@@ -1,4 +1,5 @@
 import os
+import uvicorn
 from dotenv import load_dotenv
 from app.services.openrouter_client import OpenRouterClient
 from fastapi import FastAPI
@@ -38,10 +39,6 @@ def root():
 
 @app.get("/razonador")
 def razonador_endpoint():
-    """
-    Endpoint que prepara un prompt y lo envía al modelo razonador de OpenRouter.
-    Devuelve la respuesta del modelo.
-    """
     try:
         client = get_openrouter_client()
         
@@ -55,7 +52,7 @@ def razonador_endpoint():
             "status": "success",
             "prompt": prompt,
             "respuesta": respuesta,
-            "modelo": "openai/gpt-oss-20b:free"
+            "modelo": "anthropic/claude-3-haiku"
         }
     except Exception as e:
         return {
@@ -66,10 +63,6 @@ def razonador_endpoint():
 
 @app.get("/llm_normal")
 def llm_normal_endpoint():
-    """
-    Endpoint que prepara un prompt y lo envía al modelo normal de OpenRouter.
-    Devuelve la respuesta del modelo.
-    """
     try:
         client = get_openrouter_client()
         
@@ -83,7 +76,7 @@ def llm_normal_endpoint():
             "status": "success",
             "prompt": prompt,
             "respuesta": respuesta,
-            "modelo": "google/gemini-2.0-flash-exp:free"
+            "modelo": "anthropic/claude-3-haiku"
         }
     except Exception as e:
         return {
@@ -94,10 +87,6 @@ def llm_normal_endpoint():
 
 @app.get("/imagen")
 def imagen_endpoint():
-    """
-    Endpoint que genera una imagen usando el modelo de OpenRouter.
-    Devuelve la respuesta JSON completa del modelo.
-    """
     try:
         client = get_openrouter_client()
         
@@ -118,3 +107,33 @@ def imagen_endpoint():
             "status": "error",
             "mensaje": str(e)
         }
+
+if __name__ == "__main__":
+    # Leemos la configuración del entorno
+    app_host = os.getenv("APP_HOST", "0.0.0.0")
+    app_port = int(os.getenv("APP_PORT", "8000"))
+
+    # Comprobamos si el modo de recarga está activado desde el .env
+    # El valor por defecto es "false" si la variable no existe.
+    reload_enabled = os.getenv("RELOAD_MODE", "false").lower() == "true"
+
+    if reload_enabled:
+        print("Iniciando en modo de desarrollo con auto-recarga...")
+        # En modo reload, USAMOS EL STRING para que Uvicorn sepa qué módulo recargar.
+        # Es necesario para que esta funcionalidad específica funcione.
+        uvicorn.run(
+            "app.main:app", 
+            host=app_host, 
+            port=app_port, 
+            reload=True
+        )
+    else:
+        print("Iniciando en modo de producción...")
+        # En producción, pasamos el objeto 'app' directamente. Es más seguro y limpio,
+        # y no necesitamos la funcionalidad de recarga.
+        uvicorn.run(
+            app, 
+            host=app_host, 
+            port=app_port, 
+            reload=False
+        )

@@ -13,5 +13,6 @@ COPY src/app /src/app
 
 EXPOSE 8000
 
-# Este comando no cambia
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# El comando ahora ejecuta el módulo de Python directamente,
+# que a su vez iniciará uvicorn a través del entry point.
+CMD ["python", "-m", "app.main"]

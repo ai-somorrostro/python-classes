@@ -11,6 +11,6 @@ services:
       - ./src/app:/src/app
     # Apunta al archivo .env dentro de la carpeta de la aplicación
     env_file:
-      - src/app/.env
-    environment:
-      - ENV=production
+      - .env
+    # environment:
+    #  - ENV=production

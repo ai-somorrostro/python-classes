@@ -95,7 +95,7 @@ class OpenRouterClient:
             raise ValueError("El prompt no puede estar vacío.")
 
         messages: List[Dict[str, str]] = [{"role": "user", "content": prompt}]
-        response: Dict[str, Any] = self._post_request("google/gemini-2.0-flash-exp:free", messages)
+        response: Dict[str, Any] = self._post_request("anthropic/claude-3-haiku", messages)
         return response["choices"][0]["message"]["content"]
 
     def razonador(self, prompt: str) -> str:
@@ -115,7 +115,7 @@ class OpenRouterClient:
             raise ValueError("El prompt no puede estar vacío.")
 
         messages: List[Dict[str, str]] = [{"role": "user", "content": prompt}]
-        response: Dict[str, Any] = self._post_request("openai/gpt-oss-20b:free", messages)
+        response: Dict[str, Any] = self._post_request("anthropic/claude-3-haiku", messages)
         return response["choices"][0]["message"]["content"]
 
     def generar_imagen(self, prompt: str) -> Dict[str, Any]:
