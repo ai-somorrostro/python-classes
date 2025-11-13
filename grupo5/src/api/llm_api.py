@@ -1,58 +1,53 @@
 # src/api/llm_api.py
 import os
-from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from modules.__init__ import OpR_client
 from dotenv import load_dotenv
-# inicia la aplicacion FastAPI
-app = FastAPI()
+from fastapi import APIRouter
 
-# Carga de variables de entorno
-load_dotenv()
+router = APIRouter()
 
-# obtenemos las api keys
-api_key = os.getenv("API_KEY")
-api_key_image = os.getenv("API_KEY_IMAGEN")
-llamada_llm_normal = os.getenv("LLAMADA_LLM_NORMAL")
-llamada_modelo_razonador = os.getenv("LLAMADA_MODELO_RAZONADOR")
-llamada_img_gen = os.getenv("LLAMADA_IMG_GEN")
+class Apartado_api:
 
-# Creacion del cliente de OpenRouter
-cliente = OpR_client(api_key, api_key_image)
+    def __init__(self, cliente: OpR_client, llamada_llm_normal, llamada_modelo_razonador, llamada_img_gen):
+        self.cliente = cliente
+        self.llamada_llm_normal = llamada_llm_normal
+        self.llamada_modelo_razonador = llamada_modelo_razonador
+        self.llamada_img_gen = llamada_img_gen
 
-## Define el modelo de entrada
-class TextoEntrada(BaseModel):
-    mensaje: str
-    modelo: str
+    ## Define el modelo de entrada
+    class TextoEntrada(BaseModel):
+        mensaje: str
+        modelo: str
 
-@app.get("/")
-async def root():
-    return {"message": "hola, caracola!"}
+    @router.get("/")
+    async def root():
+        return {"message": "hola, caracola!"}
 
-@app.post("/mensaje_llm")
-async def mensaje(prompt: TextoEntrada) -> dict:
-    if prompt.modelo == "string":
-        mensaje = cliente.llamada_LLM_normal(prompt.mensaje, llamada_llm_normal)
-    else:  
-        mensaje = cliente.llamada_LLM_normal(prompt.mensaje, prompt.modelo)
-    
-    return {"IA": f"{mensaje}!"}
-
-@app.post("/mensaje_modelo_razonador")
-async def mensaje(prompt: TextoEntrada) -> dict:
-    if prompt.modelo == "string":
-        mensaje = cliente.llamada_modelo_razonador(prompt.mensaje, llamada_modelo_razonador)
-    else:
-        mensaje = cliente.llamada_modelo_razonador(prompt.mensaje, prompt.modelo)
-
-    return {"IA": f"{mensaje}!"}
-
-@app.post("/imagen")
-def obtener_imagen(prompt: TextoEntrada) -> FileResponse:
-    if prompt.modelo == "string":
-        cliente.llamada_img_gen(prompt.mensaje, llamada_img_gen)
-    else:
-        cliente.llamada_img_gen(prompt.mensaje, prompt.modelo)
+    @router.post("/mensaje_llm")
+    async def mensaje(self, prompt: TextoEntrada) -> dict:
+        if prompt.modelo == "string":
+            mensaje = self.cliente.llamada_LLM_normal(prompt.mensaje, self.llamada_llm_normal)
+        else:  
+            mensaje = self.cliente.llamada_LLM_normal(prompt.mensaje, prompt.modelo)
         
-    return FileResponse("/src/imagen_recibida.png", media_type="image/png")
+        return {"IA": f"{mensaje}!"}
+
+    @router.post("/mensaje_modelo_razonador")
+    async def mensaje(self, prompt: TextoEntrada) -> dict:
+        if prompt.modelo == "string":
+            mensaje = self.cliente.llamada_modelo_razonador(prompt.mensaje, self.llamada_modelo_razonador)
+        else:
+            mensaje = self.cliente.llamada_modelo_razonador(prompt.mensaje, prompt.modelo)
+
+        return {"IA": f"{mensaje}!"}
+
+    @router.post("/imagen")
+    def obtener_imagen(self, prompt: TextoEntrada) -> FileResponse:
+        if prompt.modelo == "string":
+            self.cliente.llamada_img_gen(prompt.mensaje, self.llamada_img_gen)
+        else:
+            self.cliente.llamada_img_gen(prompt.mensaje, prompt.modelo)
+            
+        return FileResponse("/src/imagen_recibida.png", media_type="image/png")

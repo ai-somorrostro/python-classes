@@ -1,7 +1,7 @@
 import requests
 import base64
 
-class OpR_client:
+class OpR_Client:
     """Clase cliente para interactuar con la API de OpenRouter."""
 
     def __init__(self, api_key: str, api_key_image: str):

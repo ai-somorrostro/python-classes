@@ -1,7 +1,12 @@
 # src/main.py
 import os
-from modules.openrouter_client import OpR_client
+from modules.openrouter_client import OpR_Client
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from api.llm_api import Apartado_api
+
+app = FastAPI()
+
 
 def main():
 
@@ -33,11 +38,13 @@ def main():
     llamada_img_gen = os.getenv("LLAMADA_IMG_GEN")
 
     # Creacion del cliente de OpenRouter
-    cliente = OpR_client(api_key, api_key_image)
-
+    cliente = OpR_Client(api_key, api_key_image)
+    enrutador = Apartado_api(cliente, llamada_llm_normal, llamada_modelo_razonador, llamada_img_gen).router
+    app.include_router(enrutador)
+    
+    
     # Apartado 1: Llamada LLM normal
     # Pedimos que rellene el prompt al usuario
-    print("¿Qué quieres decirle a Gemini 2.0?")
 
     while True:
         prompt = input("Escribe algo: ").strip()
