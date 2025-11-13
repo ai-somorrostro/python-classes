@@ -1,10 +1,13 @@
 version: "3.9"
 
 services:
-  fastapi-app:
+  fastapi:
     build: .
-    container_name: fastapi-app
+    container_name: fastapi_openrouter
     ports:
-      - "8000:8000"
+      - "8000:8000"        # Mapea puerto del contenedor al host
+    env_file:
+      - .env               # Carga variables de entorno desde .env
     volumes:
-      - .:/app
+      - ./src:/app/src     # Monta tu código para poder editar sin reconstruir (opcional)
+    restart: unless-stopped

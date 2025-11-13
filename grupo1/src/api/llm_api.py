@@ -1,25 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from src.services.openrouter_client import OpenRouterClient
-import os
-from dotenv import load_dotenv
 
-load_dotenv() 
-
-# --- Configuración ---
-API_KEY = os.getenv("OPENROUTER_API_KEY")  # Puedes usar variable de entorno
-client = OpenRouterClient(API_KEY)
-
-# --- Inicializar FastAPI ---
-app = FastAPI(
-    title="OpenRouter API con FastAPI",
-    version="1.0.0",
-    docs_url="/docs",         # Ruta para Swagger UI
-    redoc_url="/redoc",       # Ruta para ReDoc
-    openapi_url="/openapi.json"  # Ruta del esquema OpenAPI
-    )
-
-# --- Modelos Pydantic para las peticiones ---
+# --- Modelos Pydantic ---
 class ChatRequest(BaseModel):
     user_message: str
     system_prompt: str
@@ -30,36 +12,37 @@ class LLMRequest(BaseModel):
 class ImageRequest(BaseModel):
     prompt: str
 
+def create_llm_router(client):
+    """
+    Crea el router pasando la instancia de OpenRouterClient.
+    """
+    router = APIRouter()
 
-# --- Endpoints ---
-@app.post("/razonador")
-def razonador(req: ChatRequest):
-    """Usa un system prompt y un mensaje del usuario"""
-    try:
-        response = client.reasoner(req.user_message, req.system_prompt)
-        return {"response": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    @router.post("/razonador")
+    def razonador(req: ChatRequest):
+        try:
+            response = client.reasoner(req.user_message, req.system_prompt)
+            return {"response": response}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
+    @router.post("/llm")
+    def llm(req: LLMRequest):
+        try:
+            response = client.llm(req.prompt)
+            return {"response": response}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/llm")
-def llm(req: LLMRequest):
-    """Llama al modelo Llama-4 Maverick"""
-    try:
-        response = client.llm(req.prompt)
-        return {"response": response}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    @router.post("/image")
+    def generate_image(req: ImageRequest):
+        try:
+            image_url = client.generate_image(req.prompt)
+            if image_url:
+                return {"image_url": image_url}
+            else:
+                raise HTTPException(status_code=404, detail="No se generó ninguna imagen.")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
-
-@app.post("/image")
-def generate_image(req: ImageRequest):
-    """Genera una imagen con GPT-5-Image-Mini"""
-    try:
-        image_url = client.generate_image(req.prompt)
-        if image_url:
-            return {"image_url": image_url}
-        else:
-            raise HTTPException(status_code=404, detail="No se generó ninguna imagen.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return router

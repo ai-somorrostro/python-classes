@@ -1,18 +1,23 @@
-# Usa imagen oficial de Python
-FROM python:3.12-slim
+# Imagen base ligera de Python
+FROM python:3.11-slim
 
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia requirements y los instala
+# Copiar archivos de dependencias
 COPY requirements.txt .
+
+# Instalar dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia el resto del proyecto
-COPY . .
+# Copiar código fuente
+COPY ./src ./src
 
-# Expone el puerto de FastAPI
+# Copiar archivo de variables de entorno
+COPY .env .env
+
+# Exponer el puerto de FastAPI
 EXPOSE 8000
 
-# Comando por defecto para iniciar Uvicorn
-CMD ["uvicorn", "src.api.llm_api:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Ejecutar la API directamente con Python
+CMD ["python", "src/main.py"]
