@@ -9,11 +9,11 @@ from services.openrouter_client import OpenRouterClient
 
 load_dotenv()  
 
-def run_api_server(api_instance, port=8000):
+def run_api_server(api_instance: llm_api = llm_api, port: int = 8000):
     """Ejecuta el servidor FastAPI en un thread separado"""
-    api_instance.run(port=port, reload=False)
+    api_instance.run(port, reload=False)
 
-def wait_for_api(base_url="http://localhost:8000", max_retries=10):
+def wait_for_api(base_url: str = "http://localhost:8000", max_retries=10):
     """Espera a que la API esté lista"""
     for i in range(max_retries):
         try:
@@ -28,6 +28,9 @@ def wait_for_api(base_url="http://localhost:8000", max_retries=10):
 
 if __name__ == "__main__":
     api_key = os.getenv('OPENROUTER_API_KEY')
+    host = os.getenv('host')
+    port = os.getenv('port')
+    base_url = os.getenv('base_url')
     if not api_key:
         print("Error: Configura OPENROUTER_API_KEY en el archivo .env")
         exit(1)
@@ -40,13 +43,11 @@ if __name__ == "__main__":
     api = llm_api(client, default_prompt=default_prompt) 
     
     print("Iniciando servidor FastAPI...")
-    api_thread = threading.Thread(target=run_api_server, args=(api, 8000), daemon=True)
+    api_thread = threading.Thread(target=run_api_server, args=(api, port), daemon=True)
     api_thread.start()
     
     if not wait_for_api():
         exit(1)
-    
-    base_url = "http://localhost:8000"
     
     print("\n✓ Pruebas completadas. La API sigue corriendo en http://localhost:8000")
     print("Presiona Ctrl+C para salir")
