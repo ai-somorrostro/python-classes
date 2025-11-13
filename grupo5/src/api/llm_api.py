@@ -26,21 +26,31 @@ class Apartado_api:
         # Ruta para manejar mensajes LLM normales
         @self.router.post("/mensaje_llm")
         async def mensaje_llm(prompt: TextoEntrada):
-            modelo = self.llamada_llm_normal if prompt.modelo == "string" else prompt.modelo
+            if prompt.modelo == "string":
+                modelo = self.llamada_llm_normal
+            else:
+                modelo = prompt.modelo
             mensaje = self.cliente.llamada_LLM_normal(prompt.mensaje, modelo)
             return {"IA": f"{mensaje}!"}
         
         # Ruta para manejar mensajes del modelo razonador
         @self.router.post("/mensaje_modelo_razonador")
         async def mensaje_razonador(prompt: TextoEntrada):
-            modelo = self.llamada_modelo_razonador if prompt.modelo == "string" else prompt.modelo
+            if prompt.modelo == "string":
+                modelo = self.llamada_modelo_razonador
+            else:
+                modelo = prompt.modelo
             mensaje = self.cliente.llamada_modelo_razonador(prompt.mensaje, modelo)
             return {"IA": f"{mensaje}!"}
 
         # Ruta para manejar generación de imágenes
         @self.router.post("/imagen")
         async def obtener_imagen(prompt: TextoEntrada):
-            modelo = self.llamada_img_gen if prompt.modelo == "string" else prompt.modelo
+            if prompt.modelo == "string":
+                modelo = self.llamada_img_gen
+            else:
+                modelo = prompt.modelo
+            
             self.cliente.llamada_img_gen(prompt.mensaje, modelo)
             return FileResponse("/src/imagen_recibida.png", media_type="image/png")
 
