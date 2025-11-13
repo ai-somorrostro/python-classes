@@ -43,7 +43,7 @@ class llm_api:
                 },
                 "version": "1.0.0"
             }
-        
+
         @self.app.get("/health")
         async def health():
             """Verifica el estado de la API"""
@@ -61,7 +61,6 @@ class llm_api:
             Body JSON esperado:
                 {
                     "prompt": "tu prompt aquí",
-                    "model": "opcional"
                 }
             
             Returns:
@@ -78,8 +77,7 @@ class llm_api:
                 return {
                     "success": True,
                     "prompt": prompt,
-                    "response": response,
-                    "model": "grok"
+                    "response": response
                 }
             except ValueError as e:
                 raise HTTPException(status_code=500, detail=str(e))
@@ -89,10 +87,16 @@ class llm_api:
         @self.app.post("/chat/reasoner")
         async def chat_reasoner_get(body: dict = Body(default=None, description="El prompt para el razonador")):
             """
-            Genera respuesta usando el razonador (GET) - Visible en URL
+            Genera respuesta usando el razonador (POST)
+
+            Body JSON esperado: 
+            { 
+                "prompt": "tu prompt aquí", 
+                "save_local": true/false (opcional)
+            }
             
             Args:
-                prompt: El prompt a procesar. Si no se proporciona, usa el default.
+                prompt: El prompt a procesar. Se le debe pasar en el body JSON. Si no se proporciona, usa el default.
                 
             Returns:
                     Respuesta del razonador (JSON visible en navegador)
@@ -145,24 +149,23 @@ class llm_api:
                 for attempt in range(max_retries):
                     try:
                         image_url = self.client.generate_image(prompt)
-                        break  # Éxito: sale del loop
+                        break  
                     except Exception as e:
                         last_exception = e
                         if attempt < max_retries - 1:
                             print(f"Intento {attempt + 1} falló: {str(e)}. Reintentando en {retry_delay}s...")
-                            await asyncio.sleep(retry_delay)  # Ajusta delay si quieres backoff exponencial
-                            retry_delay *= 1.5  # Backoff exponencial opcional
+                            await asyncio.sleep(retry_delay)  
+                            retry_delay *= 1.5 
                         else:
                             raise HTTPException(status_code=500, detail=f"Error después de {max_retries} intentos: {str(last_exception)}")
                 
-                # Inicializa result
                 result = {
                     "success": True,
                     "prompt": prompt
                 }
                 
                 if save_local and image_url.startswith('data:image'):
-                    os.makedirs('images', exist_ok=True)  # Crea carpeta si no existe
+                    os.makedirs('images', exist_ok=True) 
                     fecha = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                     filename = f'imagen_{fecha}.png'
                     filepath = os.path.join('images', filename)
@@ -199,7 +202,7 @@ class llm_api:
                 raise HTTPException(status_code=404, detail="Imagen no encontrada")
             return FileResponse(filepath)
     
-    def run(self, host: str = "0.0.0.0", port: int = 8001, reload: bool = False):
+    def run(self, host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
         """
         Ejecuta el servidor FastAPI
         
