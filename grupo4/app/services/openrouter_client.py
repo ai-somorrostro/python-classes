@@ -54,7 +54,7 @@ class OpenRouterClient:
             payload.update(extra_params)
         
         try:
-            response = requests.post(self.base_url, headers=self.headers, json=payload)
+            response = requests.post(self.base_url, headers=self.headers, json=payload, timeout=30)
             response.raise_for_status()
             api_response = response.json()
             if 'error' in api_response:
