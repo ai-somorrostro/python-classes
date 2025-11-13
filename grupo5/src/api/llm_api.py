@@ -2,52 +2,48 @@
 import os
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from modules.__init__ import OpR_client
-from dotenv import load_dotenv
 from fastapi import APIRouter
 
-router = APIRouter()
+# Este es un modelo de entrada para que en swagger puedas ingresar el mensaje y el modelo, si no pones modelo (sobreescribes "string") se usa el por defecto
+class TextoEntrada(BaseModel):
+    mensaje: str
+    modelo: str
 
+# Creamos la clase Apartado_api que contendrá las rutas relacionadas con LLM y generación de imágenes 
 class Apartado_api:
+    # Constructor de la clase
+    def __init__(self, cliente, llamada_llm_normal: str, llamada_modelo_razonador: str, llamada_img_gen: str):
+        self.cliente = cliente # Cliente de OpenRouter
+        self.llamada_llm_normal = llamada_llm_normal # Modelo por defecto para LLM normal
+        self.llamada_modelo_razonador = llamada_modelo_razonador # Modelo por defecto para modelo razonador
+        self.llamada_img_gen = llamada_img_gen  # Modelo por defecto para generación de imágenes
+        self.router = APIRouter() # Creamos un router de FastAPI
+        self._setup_routes() # Configuramos las rutas
 
-    def __init__(self, cliente: OpR_client, llamada_llm_normal, llamada_modelo_razonador, llamada_img_gen):
-        self.cliente = cliente
-        self.llamada_llm_normal = llamada_llm_normal
-        self.llamada_modelo_razonador = llamada_modelo_razonador
-        self.llamada_img_gen = llamada_img_gen
+    # Configuración de las rutas (necesario si no quieres que main tenga las rutas directamente)
+    def _setup_routes(self):
 
-    ## Define el modelo de entrada
-    class TextoEntrada(BaseModel):
-        mensaje: str
-        modelo: str
-
-    @router.get("/")
-    async def root():
-        return {"message": "hola, caracola!"}
-
-    @router.post("/mensaje_llm")
-    async def mensaje(self, prompt: TextoEntrada) -> dict:
-        if prompt.modelo == "string":
-            mensaje = self.cliente.llamada_LLM_normal(prompt.mensaje, self.llamada_llm_normal)
-        else:  
-            mensaje = self.cliente.llamada_LLM_normal(prompt.mensaje, prompt.modelo)
+        # Ruta para manejar mensajes LLM normales
+        @self.router.post("/mensaje_llm")
+        async def mensaje_llm(prompt: TextoEntrada):
+            modelo = self.llamada_llm_normal if prompt.modelo == "string" else prompt.modelo
+            mensaje = self.cliente.llamada_LLM_normal(prompt.mensaje, modelo)
+            return {"IA": f"{mensaje}!"}
         
-        return {"IA": f"{mensaje}!"}
+        # Ruta para manejar mensajes del modelo razonador
+        @self.router.post("/mensaje_modelo_razonador")
+        async def mensaje_razonador(prompt: TextoEntrada):
+            modelo = self.llamada_modelo_razonador if prompt.modelo == "string" else prompt.modelo
+            mensaje = self.cliente.llamada_modelo_razonador(prompt.mensaje, modelo)
+            return {"IA": f"{mensaje}!"}
 
-    @router.post("/mensaje_modelo_razonador")
-    async def mensaje(self, prompt: TextoEntrada) -> dict:
-        if prompt.modelo == "string":
-            mensaje = self.cliente.llamada_modelo_razonador(prompt.mensaje, self.llamada_modelo_razonador)
-        else:
-            mensaje = self.cliente.llamada_modelo_razonador(prompt.mensaje, prompt.modelo)
+        # Ruta para manejar generación de imágenes
+        @self.router.post("/imagen")
+        async def obtener_imagen(prompt: TextoEntrada):
+            modelo = self.llamada_img_gen if prompt.modelo == "string" else prompt.modelo
+            self.cliente.llamada_img_gen(prompt.mensaje, modelo)
+            return FileResponse("/src/imagen_recibida.png", media_type="image/png")
 
-        return {"IA": f"{mensaje}!"}
-
-    @router.post("/imagen")
-    def obtener_imagen(self, prompt: TextoEntrada) -> FileResponse:
-        if prompt.modelo == "string":
-            self.cliente.llamada_img_gen(prompt.mensaje, self.llamada_img_gen)
-        else:
-            self.cliente.llamada_img_gen(prompt.mensaje, prompt.modelo)
-            
-        return FileResponse("/src/imagen_recibida.png", media_type="image/png")
+    # Método para obtener el las rutas
+    def get_router(self):
+        return self.router
